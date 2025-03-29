@@ -2,6 +2,11 @@
 using Hermes.Configs.Cors;
 using Hermes.Configs.Swagger;
 using DotNetEnv;
+using Hermes.Configs.JsonSerializer;
+using Hermes.Core.Interfaces.Data;
+using Hermes.Configs.Postgresql;
+using Hermes.Core.Interfaces.Repositories;
+using Hermes.Data.Repositories;
 
 namespace Hermes
 {
@@ -16,13 +21,23 @@ namespace Hermes
                 Env.Load();
             }
 
+            string connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")!;
+
+            // Auth
+            builder.Services.AddAuthorization();
+
             // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            // Swagger.
-            builder.Services.AddSwaggerConfiguration();
-            // Cors.
+            builder.Services.ConfigureJsonSerializer();
             builder.Services.AddCorsConfiguration();
+            builder.Services.AddSwaggerConfiguration();
+
+            builder.Services.AddSingleton<IDbConnectionFactory>(provider => 
+            new PostgresConnectionFactory(connectionString));
+
+            // Dependencies Injection.
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
 
             var app = builder.Build();
 
