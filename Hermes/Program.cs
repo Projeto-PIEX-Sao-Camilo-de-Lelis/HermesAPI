@@ -7,6 +7,9 @@ using Hermes.Core.Interfaces.Data;
 using Hermes.Configs.Postgresql;
 using Hermes.Core.Interfaces.Repositories;
 using Hermes.Data.Repositories;
+using Hermes.Core.Interfaces.Services;
+using Hermes.Core.Services;
+using Hermes.Core.Profiles;
 
 namespace Hermes
 {
@@ -32,12 +35,14 @@ namespace Hermes
             builder.Services.ConfigureJsonSerializer();
             builder.Services.AddCorsConfiguration();
             builder.Services.AddSwaggerConfiguration();
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
 
             builder.Services.AddSingleton<IDbConnectionFactory>(provider => 
             new PostgresConnectionFactory(connectionString));
 
             // Dependencies Injection.
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IUserService, UserService>();
 
             var app = builder.Build();
 

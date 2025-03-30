@@ -61,12 +61,12 @@ namespace Hermes.Data.Repositories
                     entity.IsActive
                 };
 
-                var user = await connection.ExecuteScalarAsync<User>(sql, parameters);
+                var user = await connection.QuerySingleOrDefaultAsync<User>(sql, parameters);
                 return user;
             });
         }
 
-        public async Task<User?> UpdateAsync(User entity)
+        public async Task<User> UpdateAsync(User entity)
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
@@ -85,14 +85,15 @@ namespace Hermes.Data.Repositories
 
                 var parameters = new
                 {
-                    entity.Id,
                     entity.Name,
                     entity.Email,
                     entity.Password,
                     entity.UpdatedAt,
                     entity.IsActive,
+                    entity.Id
                 };
 
+                //await connection.QueryFirstOrDefaultAsync(sql, parameters);
                 await connection.ExecuteAsync(sql, parameters);
                 return entity;
             });
