@@ -10,6 +10,7 @@ using Hermes.Data.Repositories;
 using Hermes.Core.Interfaces.Services;
 using Hermes.Core.Services;
 using Hermes.Core.Profiles;
+using Hermes.Configs.Authentication;
 
 namespace Hermes
 {
@@ -33,8 +34,10 @@ namespace Hermes
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.ConfigureJsonSerializer();
+            builder.Services.ConfigureJwtAuthentication();
             builder.Services.AddCorsConfiguration();
             builder.Services.AddSwaggerConfiguration();
+            builder.Services.AddHttpContextAccessor();
             builder.Services.AddAutoMapper(typeof(MappingProfile));
 
             builder.Services.AddSingleton<IDbConnectionFactory>(provider => 
@@ -43,6 +46,7 @@ namespace Hermes
             // Dependencies Injection.
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IAuthService, AuthenticationService>();
 
             var app = builder.Build();
 
@@ -56,7 +60,7 @@ namespace Hermes
             // app.UseHttpsRedirection();
 
             app.UseCors("AllowAllOrigins");
-            // app.UseAuthentication();
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
 

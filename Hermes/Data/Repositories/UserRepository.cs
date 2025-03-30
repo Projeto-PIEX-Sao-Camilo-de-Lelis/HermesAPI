@@ -93,7 +93,6 @@ namespace Hermes.Data.Repositories
                     entity.Id
                 };
 
-                //await connection.QueryFirstOrDefaultAsync(sql, parameters);
                 await connection.ExecuteAsync(sql, parameters);
                 return entity;
             });

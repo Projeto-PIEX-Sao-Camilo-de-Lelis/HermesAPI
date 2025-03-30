@@ -3,12 +3,14 @@ using Hermes.Core.Dtos.Requests;
 using Hermes.Core.Dtos.Responses;
 using Hermes.Core.Interfaces.Services;
 using Hermes.Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hermes.Controllers
 {
     [Route("api/v1/users")]
     [ApiController]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -48,7 +50,8 @@ namespace Hermes.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<UserResponseDto>> PostUser([FromBody] UserCreateRequestDto userCreateRequest)
+        [AllowAnonymous]
+        public async Task<ActionResult<UserResponseDto>> Post([FromBody] UserCreateRequestDto userCreateRequest)
         {
             if (!ModelState.IsValid)
             {
@@ -67,7 +70,7 @@ namespace Hermes.Controllers
         [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<UserResponseDto>> PutUser(string email, [FromBody] UserUpdateRequestDto userUpdateRequest )
+        public async Task<ActionResult<UserResponseDto>> Put(string email, [FromBody] UserUpdateRequestDto userUpdateRequest )
         {
             if (email != userUpdateRequest.Email)
             {
