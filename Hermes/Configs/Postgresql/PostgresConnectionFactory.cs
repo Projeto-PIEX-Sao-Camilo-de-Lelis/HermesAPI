@@ -10,7 +10,20 @@ namespace Hermes.Configs.Postgresql
 
         public PostgresConnectionFactory(string connectionString)
         {
-            _connectionString = connectionString;
+            var builder = new NpgsqlConnectionStringBuilder(connectionString)
+            {
+                Pooling = true,
+                MinPoolSize = 1,
+                MaxPoolSize = 20,
+                ConnectionIdleLifetime = 300,
+                ConnectionPruningInterval = 60,
+                Timeout = 15,
+                CommandTimeout = 30,
+                KeepAlive = 60,
+                SslMode = SslMode.Require
+            };
+
+            _connectionString = builder.ToString();
         }
 
         public IDbConnection CreateConnection()
@@ -21,9 +34,9 @@ namespace Hermes.Configs.Postgresql
             {
                 connection.Open();
             }
-            catch (NpgsqlException)
+            catch (NpgsqlException ex)
             {
-                throw new NpgsqlException("Não foi possível estabelecer a conexão com a base de dados.");
+                throw new NpgsqlException("Não foi possível estabelecer a conexão com a base de dados.", ex);
             }
      
             return connection;
