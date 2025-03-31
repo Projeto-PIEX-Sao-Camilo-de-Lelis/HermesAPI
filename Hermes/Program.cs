@@ -40,7 +40,7 @@ namespace Hermes
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-            builder.Services.AddSingleton<IDbConnectionFactory>(provider => 
+            builder.Services.AddSingleton<IDbConnectionFactory>(provider =>
             new PostgresConnectionFactory(connectionString));
 
             // Dependencies Injection.
@@ -51,11 +51,11 @@ namespace Hermes
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            //if (app.Environment.IsDevelopment())
+            //{
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            //}
 
             // app.UseHttpsRedirection();
 
