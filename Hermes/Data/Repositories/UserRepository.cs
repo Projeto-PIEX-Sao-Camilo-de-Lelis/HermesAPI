@@ -14,7 +14,8 @@ namespace Hermes.Data.Repositories
             return await ExecuteWithConnectionAsync(async connection =>
             {
                 const string sql = @"
-                    SELECT u.name,
+                    SELECT u.id,
+                           u.name,
                            u.email,
                            u.password,
                            u.role,
@@ -34,7 +35,8 @@ namespace Hermes.Data.Repositories
             return await ExecuteWithConnectionAsync(async connection =>
             {
                 const string sql = @"
-                    SELECT u.name,
+                    SELECT u.id,
+                           u.name,
                            u.email,
                            u.password,
                            u.role,
@@ -53,7 +55,8 @@ namespace Hermes.Data.Repositories
             return await ExecuteWithConnectionAsync(async connection =>
             {
                 const string sql = @"
-                    SELECT u.name,
+                    SELECT u.id,
+                           u.name,
                            u.email,
                            u.password,
                            u.role,
