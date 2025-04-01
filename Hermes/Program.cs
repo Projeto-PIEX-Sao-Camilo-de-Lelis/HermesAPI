@@ -1,16 +1,20 @@
 
-using Hermes.Configs.Cors;
-using Hermes.Configs.Swagger;
+using Dapper;
 using DotNetEnv;
-using Hermes.Configs.JsonSerializer;
-using Hermes.Core.Interfaces.Data;
-using Hermes.Configs.Postgresql;
-using Hermes.Core.Interfaces.Repositories;
-using Hermes.Data.Repositories;
-using Hermes.Core.Interfaces.Services;
-using Hermes.Core.Services;
-using Hermes.Core.Profiles;
 using Hermes.Configs.Authentication;
+using Hermes.Configs.Cors;
+using Hermes.Configs.JsonSerializer;
+using Hermes.Configs.Postgresql;
+using Hermes.Configs.Swagger;
+using Hermes.Core.Enums;
+using Hermes.Core.Interfaces.Data;
+using Hermes.Core.Interfaces.Repository;
+using Hermes.Core.Interfaces.Service;
+using Hermes.Core.Profiles;
+using Hermes.Core.Services;
+using Hermes.Data.Repositories;
+using Hermes.Data.TypeHandlers;
+using Npgsql;
 
 namespace Hermes
 {
@@ -40,6 +44,7 @@ namespace Hermes
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+            // Database Connection.
             builder.Services.AddSingleton<IDbConnectionFactory>(provider =>
             new PostgresConnectionFactory(connectionString));
 
@@ -47,6 +52,7 @@ namespace Hermes
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IAuthService, AuthenticationService>();
+
 
             var app = builder.Build();
 

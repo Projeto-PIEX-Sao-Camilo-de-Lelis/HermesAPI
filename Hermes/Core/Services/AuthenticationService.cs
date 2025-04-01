@@ -4,7 +4,7 @@ using System.Text;
 using Hermes.Configs.Constants;
 using Hermes.Core.Dtos.Requests;
 using Hermes.Core.Dtos.Responses;
-using Hermes.Core.Interfaces.Services;
+using Hermes.Core.Interfaces.Service;
 using Hermes.Core.Models;
 using Microsoft.IdentityModel.Tokens;
 
@@ -90,7 +90,7 @@ namespace Hermes.Core.Services
             ci.AddClaim(new Claim("userId", user.Id.ToString()));
             ci.AddClaim(new Claim("username", user.Name));
             ci.AddClaim(new Claim(ClaimTypes.Name, user.Email));
-            ci.AddClaim(new Claim(ClaimTypes.Role, user.UserRole.ToString()));
+            ci.AddClaim(new Claim(ClaimTypes.Role, user.Role.ToString()));
 
             return ci;
         }

@@ -1,5 +1,5 @@
-﻿using Hermes.Core.Interfaces.Repositories;
-using Hermes.Core.Interfaces.Services;
+﻿using Hermes.Core.Interfaces.Repository;
+using Hermes.Core.Interfaces.Service;
 using Hermes.Core.Models;
 
 namespace Hermes.Core.Services

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Hermes.Core.Dtos.Requests;
 using Hermes.Core.Dtos.Responses;
-using Hermes.Core.Interfaces.Services;
+using Hermes.Core.Interfaces.Service;
 using Hermes.Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,31 +1,49 @@
 ﻿using Dapper;
 using Hermes.Core.Interfaces.Data;
-using Hermes.Core.Interfaces.Repositories;
+using Hermes.Core.Interfaces.Repository;
 using Hermes.Core.Models;
 
 namespace Hermes.Data.Repositories
 {
     public class UserRepository : BaseRepository, IUserRepository
     {
-        public UserRepository(IDbConnectionFactory connectionFactory) : base(connectionFactory)
-        {
-        }
+        public UserRepository(IDbConnectionFactory connectionFactory) : base(connectionFactory) { }
 
-        public async Task<IEnumerable<User>> GetAllAsync()
+        public async Task<IEnumerable<User?>> GetAllAsync()
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
-                const string sql = @"SELECT * FROM users WHERE is_active = true";
+                const string sql = @"
+                    SELECT u.name,
+                           u.email,
+                           u.password,
+                           u.role,
+                           u.created_at,
+                           u.updated_at,
+                           u.is_active
+                    FROM users AS u 
+                    WHERE is_active = true";
+
                 return await connection.QueryAsync<User>(sql);
             });
-   
+
         }
 
         public async Task<User?> GetByIdAsync(Guid id)
         {
-            return await ExecuteWithConnectionAsync(async connection => 
+            return await ExecuteWithConnectionAsync(async connection =>
             {
-                const string sql = @"SELECT * FROM users WHERE id = @Id AND is_active = true";
+                const string sql = @"
+                    SELECT u.name,
+                           u.email,
+                           u.password,
+                           u.role,
+                           u.created_at,
+                           u.updated_at,
+                           u.is_active
+                    FROM users AS u 
+                    WHERE u.id = @Id AND is_active = true";
+
                 return await connection.QueryFirstOrDefaultAsync<User>(sql, new { Id = id });
             });
         }
@@ -34,7 +52,17 @@ namespace Hermes.Data.Repositories
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
-                const string sql = @"SELECT * FROM users WHERE email = @Email AND is_active = true";
+                const string sql = @"
+                    SELECT u.name,
+                           u.email,
+                           u.password,
+                           u.role,
+                           u.created_at,
+                           u.updated_at,
+                           u.is_active 
+                    FROM users AS u
+                    WHERE email = @Email AND is_active = true";
+
                 return await connection.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
             });
         }
@@ -66,7 +94,7 @@ namespace Hermes.Data.Repositories
             });
         }
 
-        public async Task<User> UpdateAsync(User entity)
+        public async Task<User?> UpdateAsync(User entity)
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {

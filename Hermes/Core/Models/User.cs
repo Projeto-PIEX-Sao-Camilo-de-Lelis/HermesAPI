@@ -8,7 +8,7 @@ namespace Hermes.Core.Models
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; private set; }
-        public Role UserRole { get; set; } = Role.User;
+        public Role Role { get; set; } = Role.User;
         public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;

@@ -1,5 +1,5 @@
 ﻿using Hermes.Core.Dtos.Requests;
-using Hermes.Core.Interfaces.Services;
+using Hermes.Core.Interfaces.Service;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hermes.Controllers

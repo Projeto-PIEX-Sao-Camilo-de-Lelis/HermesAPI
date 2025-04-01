@@ -1,6 +1,6 @@
 ﻿using Hermes.Core.Models;
 
-namespace Hermes.Core.Interfaces.Services
+namespace Hermes.Core.Interfaces.Service
 {
     public interface IUserService
     {

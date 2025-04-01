@@ -1,5 +1,7 @@
-﻿using System.Data;
+﻿using Dapper;
+using System.Data;
 using Hermes.Core.Interfaces.Data;
+using Hermes.Data.TypeHandlers;
 using Npgsql;
 
 namespace Hermes.Configs.Postgresql
@@ -33,12 +35,14 @@ namespace Hermes.Configs.Postgresql
             try
             {
                 connection.Open();
+                SqlMapper.AddTypeHandler(new RoleTypeHandler());
+                DefaultTypeMap.MatchNamesWithUnderscores = true;
             }
             catch (NpgsqlException ex)
             {
                 throw new NpgsqlException("Não foi possível estabelecer a conexão com a base de dados.", ex);
             }
-     
+
             return connection;
         }
     }
