@@ -77,9 +77,12 @@ namespace Hermes.Data.Repositories
                 entity.CreatedAt = DateTime.UtcNow;
 
                 const string sql = @"
-                    INSERT INTO users (name, email, password, created_at, is_active) 
-                    VALUES (@Name, @Email, @Password, @CreatedAt, @IsActive) 
-                    RETURNING *";
+                    INSERT INTO users 
+                        (name, email, password, created_at, is_active) 
+                    VALUES 
+                        (@Name, @Email, @Password, @CreatedAt, @IsActive) 
+                    RETURNING 
+                        id, name, email, created_at, is_active";
 
                 entity.SetPassword(entity.Password);
 
@@ -112,7 +115,8 @@ namespace Hermes.Data.Repositories
                         updated_at = @UpdatedAt, 
                         is_active = @IsActive
                     WHERE id = @Id
-                    RETURNING *";
+                    RETURNING 
+                        id, name, email, updated_at, is_active";
 
                 var parameters = new
                 {
