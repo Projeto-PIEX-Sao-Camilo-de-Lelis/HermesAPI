@@ -10,12 +10,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Hermes.Core.Services
 {
-    public class AuthenticationService : IAuthService
+    public class AuthService : IAuthService
     {
         private readonly IUserService _userService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthenticationService(IUserService userService, IHttpContextAccessor httpContextAccessor)
+        public AuthService(IUserService userService, IHttpContextAccessor httpContextAccessor)
         {
             _userService = userService;
             _httpContextAccessor = httpContextAccessor;

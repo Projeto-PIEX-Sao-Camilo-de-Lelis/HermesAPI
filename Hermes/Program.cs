@@ -51,7 +51,7 @@ namespace Hermes
             // Dependencies Injection.
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IAuthService, AuthenticationService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
 
 
             var app = builder.Build();

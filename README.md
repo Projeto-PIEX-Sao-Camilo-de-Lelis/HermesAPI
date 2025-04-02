@@ -18,11 +18,9 @@ Este é um projeto desenvolvido pelos alunos, do curso de Análise e Desenvolvim
 
 ![Arquitetura da API](repo_assets/Esboco-Arquitetura-API.svg)
 
-
-
 ## Documentação da API
 
-> Em desenvolvimento.
+> [Swagger | HermesAPI - Servidor de Homologação](https://hermesapi-homolog.onrender.com/swagger/index.html)
 
 ## Contato
 

@@ -90,7 +90,7 @@ namespace Hermes.Controllers
 
             var userToUpdate = _mapper.Map(userUpdateRequest, existingUser);
  
-            await _userService.UpdateUserAsync(userToUpdate);
+            await _userService.UpdateUserAsync(userToUpdate.Id, userToUpdate);
             return NoContent();
         }
 

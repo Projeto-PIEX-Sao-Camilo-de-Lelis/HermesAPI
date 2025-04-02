@@ -55,7 +55,7 @@ namespace Hermes.Data.Repositories
             });
         }
 
-        public async Task<Post?> GetByAuthorAsync(Guid authorId)
+        public async Task<Post?> GetByAuthorAsync(string authorName)
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
@@ -72,10 +72,10 @@ namespace Hermes.Data.Repositories
                     FROM posts AS p
                     JOIN users AS u 
                         ON p.author_id = u.id
-                    WHERE author_id = @AuthorId AND is_published = true
+                    WHERE author_name = @AuthorName AND is_published = true
                     ORDER BY p.created_at DESC";
 
-                return await connection.QueryFirstOrDefaultAsync<Post>(sql, new { AuthorId = authorId });
+                return await connection.QueryFirstOrDefaultAsync<Post>(sql, new { AuthorName = authorName });
             });
         }
 
@@ -106,7 +106,7 @@ namespace Hermes.Data.Repositories
             });
         }
 
-        public async Task<Post?> UpdateAsync(Post entity)
+        public async Task<Post?> UpdateAsync(Guid id, Post entity)
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
@@ -129,7 +129,8 @@ namespace Hermes.Data.Repositories
                     entity.Content,
                     entity.UpdatedAt,
                     entity.AuthorId,
-                    entity.IsPublished
+                    entity.IsPublished,
+                    Id = id
                 };
 
                 await connection.ExecuteAsync(sql, parameters);

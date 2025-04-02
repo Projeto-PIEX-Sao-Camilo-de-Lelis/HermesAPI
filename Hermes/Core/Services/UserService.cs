@@ -32,20 +32,20 @@ namespace Hermes.Core.Services
         {
             if (user is null)
             {
-                throw new Exception("O usuário não pode ser nulo!");
+                throw new ArgumentNullException(nameof(user), "O usuário não pode ser nulo!");
             }
 
             return await _userRepository.CreateAsync(user);
         }
 
-        public async Task<User> UpdateUserAsync(User user)
+        public async Task<User> UpdateUserAsync(Guid id, User user)
         {
             if (user is null)
             {
-                throw new Exception("O usuário não pode ser nulo!");
+                throw new ArgumentNullException(nameof(user), "O usuário não pode ser nulo!");
             }
 
-            return await _userRepository.UpdateAsync(user);
+            return await _userRepository.UpdateAsync(id, user);
         }
 
         public async Task DeleteUserAsync(Guid id)

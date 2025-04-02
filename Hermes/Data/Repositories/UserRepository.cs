@@ -100,7 +100,7 @@ namespace Hermes.Data.Repositories
             });
         }
 
-        public async Task<User?> UpdateAsync(User entity)
+        public async Task<User?> UpdateAsync(Guid id, User entity)
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
@@ -125,7 +125,7 @@ namespace Hermes.Data.Repositories
                     entity.Password,
                     entity.UpdatedAt,
                     entity.IsActive,
-                    entity.Id
+                    Id = id
                 };
 
                 await connection.ExecuteAsync(sql, parameters);
