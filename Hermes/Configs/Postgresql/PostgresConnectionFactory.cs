@@ -22,7 +22,7 @@ namespace Hermes.Configs.Postgresql
                 Timeout = 15,
                 CommandTimeout = 30,
                 KeepAlive = 60,
-                SslMode = SslMode.Require
+                SslMode = SslMode.Prefer
             };
 
             _connectionString = builder.ToString();
