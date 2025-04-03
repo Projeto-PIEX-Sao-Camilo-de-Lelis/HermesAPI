@@ -59,7 +59,7 @@ namespace Hermes.Core.Services
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
                 Path = "/",
-                Expires = DateTime.UtcNow.AddHours(1),
+                //Expires = DateTime.UtcNow.AddHours(1), // Cookie de sessão.
             };
 
             _httpContextAccessor.HttpContext?.Response.Cookies.Append(AuthConstants.AuthTokenCookieName, token, cookieOptions);

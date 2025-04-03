@@ -6,7 +6,7 @@ namespace Hermes.Core.Interfaces.Service
     {
         Task<IEnumerable<Post>> GetAllPostsAsync();
         Task<Post> GetPostByIdAsync(Guid id);
-        Task<Post> GetPostByAuthor(string author);
+        Task<IEnumerable<Post>> GetPostByAuthor(string author);
         Task<Post> CreatePostAsync(Post post);
         Task<Post> UpdatePostAsync(Guid id,Post post);
         Task DeletePostAsync(Guid id);

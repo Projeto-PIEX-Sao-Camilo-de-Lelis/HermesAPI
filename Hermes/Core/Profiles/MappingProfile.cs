@@ -15,6 +15,7 @@ namespace Hermes.Core.Profiles
 
             CreateMap<PostCreateRequestDto, Post>().ReverseMap();
             CreateMap<PostUpdateRequestDto, Post>().ReverseMap();
+            CreateMap<PostResponseDto, Post>().ReverseMap();
         }
     }
 }

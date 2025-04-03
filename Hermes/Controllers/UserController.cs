@@ -26,13 +26,13 @@ namespace Hermes.Controllers
         [ProducesResponseType(typeof(IEnumerable<UserResponseDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<UserResponseDto>> GetAll()
         {
-            var existingUser = await _userService.GetAllUsersAsync();
-            var users = _mapper.Map<IEnumerable<UserResponseDto>>(existingUser);
+            var existingUsers = await _userService.GetAllUsersAsync();
+            var users = _mapper.Map<IEnumerable<UserResponseDto>>(existingUsers);
 
             return Ok(users);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<UserResponseDto>> GetById(Guid id)
@@ -40,7 +40,7 @@ namespace Hermes.Controllers
             var existingUser = await _userService.GetUserByIdAsync(id);
             if (existingUser is null)
             {
-                return NotFound();
+                return NotFound(new { message = "Nenhum usuário encontrado com o id especificado." });
             }
             var user = _mapper.Map<UserResponseDto>(existingUser);
 
@@ -66,7 +66,7 @@ namespace Hermes.Controllers
             return CreatedAtAction(nameof(GetById), new { userResponse.Id }, userResponse);
         }
 
-        [HttpPut]
+        [HttpPut("{email}")]
         [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

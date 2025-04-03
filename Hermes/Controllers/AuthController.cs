@@ -28,7 +28,11 @@ namespace Hermes.Controllers
             var authResult = await _authService.AuthenticateAsync(userLoginRequest);
             if (authResult is null)
             {
-                return Unauthorized(new { Message = "Credenciais inválidas!"});
+                return Unauthorized(new 
+                {
+                    Sucess = false,
+                    Message = "E-mail ou senha incorretos. Por favor, verifique suas credenciais e tente novamente.",
+                });
             }
 
             return Ok(new

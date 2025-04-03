@@ -15,13 +15,14 @@ namespace Hermes.Data.Repositories
             {
                 const string sql = @"
                     SELECT 
+                        p.id,
                         p.title, 
                         p.content, 
                         p.created_at, 
                         p.updated_at, 
                         p.is_published, 
                         u.id AS author_id, 
-                        u.name AS author_name 
+                        u.name AS author 
                      FROM posts AS p 
                      JOIN users AS u 
                         ON p.author_id = u.id 
@@ -38,44 +39,46 @@ namespace Hermes.Data.Repositories
             {
                 const string sql = @"
                     SELECT 
+                        p.id,
                         p.title,
                         p.content,
+                        p.author_id,
                         p.created_at,
                         p.updated_at,
                         p.is_published,
-                        u.id AS author_id,
-                        u.name AS author_name 
+                        u.name AS author 
                     FROM posts AS p 
                     JOIN users AS u 
                         ON p.author_id = u.id 
-                    WHERE id = @Id AND is_published = true 
+                    WHERE p.id = @Id AND is_published = true 
                     ORDER BY p.created_at DESC";
 
                 return await connection.QueryFirstOrDefaultAsync<Post>(sql, new { Id = id });
             });
         }
 
-        public async Task<Post?> GetByAuthorAsync(string authorName)
+        public async Task<IEnumerable<Post?>> GetByAuthorAsync(string authorName)
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
                 const string sql = @"
                     SELECT 
-                        title,
-                        content,
-                        created_at,
-                        updated_at,
-                        author_id,
-                        is_published,
+                        p.id,
+                        p.title,
+                        p.content,
+                        p.created_at,
+                        p.updated_at,
+                        p.author_id,
+                        p.is_published,
                         u.id AS author_id,
-                        u.name AS author_name
+                        u.name
                     FROM posts AS p
                     JOIN users AS u 
                         ON p.author_id = u.id
-                    WHERE author_name = @AuthorName AND is_published = true
+                    WHERE u.name = @AuthorName AND is_published = true
                     ORDER BY p.created_at DESC";
 
-                return await connection.QueryFirstOrDefaultAsync<Post>(sql, new { AuthorName = authorName });
+                return await connection.QueryAsync<Post>(sql, new { AuthorName = authorName });
             });
         }
 

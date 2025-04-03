@@ -23,7 +23,7 @@ namespace Hermes.Core.Services
             return await _postRepository.GetByIdAsync(id);
         }
 
-        public async Task<Post> GetPostByAuthor(string author)
+        public async Task<IEnumerable<Post>> GetPostByAuthor(string author)
         {
             return await _postRepository.GetByAuthorAsync(author);
         }
