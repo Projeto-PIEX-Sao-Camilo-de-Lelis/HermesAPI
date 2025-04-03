@@ -33,6 +33,48 @@ namespace Hermes.Data.Repositories
             });
         }
 
+        public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            var offset = (pageNumber - 1) * pageSize;
+
+            const string postsSql = @"
+                SELECT 
+                    p.id,
+                    p.title,
+                    p.content,
+                    p.created_at,
+                    p.updated_at,
+                    p.is_published,
+                    u.id AS author_id,
+                    u.name AS author
+                FROM posts AS p
+                JOIN users AS u
+                    ON p.author_id = u.id 
+                WHERE is_published = true
+                ORDER BY p.created_at DESC
+                LIMIT @PageSize OFFSET @Offset";
+
+            const string countSql = @"
+                SELECT COUNT(*)
+                FROM posts
+                WHERE is_published = true";
+
+            IEnumerable<Post> posts = Enumerable.Empty<Post>();
+            int totalCount = 0;
+
+            await ExecuteWithConnectionAsync(async connection =>
+            {
+                posts = await connection.QueryAsync<Post>(postsSql, new { PageSize = pageSize, Offset = offset });
+            });
+
+            await ExecuteWithConnectionAsync(async connection =>
+            {
+                totalCount = await connection.ExecuteScalarAsync<int>(countSql);
+            });
+
+            return (posts, totalCount);
+        }
+
         public async Task<Post?> GetByIdAsync(Guid id)
         {
             return await ExecuteWithConnectionAsync(async connection =>
@@ -96,7 +138,8 @@ namespace Hermes.Data.Repositories
                     RETURNING 
                         id, title, content, author_id, is_published";
 
-                var parameters = new {
+                var parameters = new
+                {
                     entity.Title,
                     entity.Content,
                     entity.CreatedAt,
@@ -150,7 +193,7 @@ namespace Hermes.Data.Repositories
                     SET is_published = false,
                         updated_at = @UpdatedAt
                     WHERE id = @Id";
-                    
+
                 await connection.ExecuteAsync(sql, new { Id = id, UpdatedAt = DateTime.UtcNow });
             });
         }

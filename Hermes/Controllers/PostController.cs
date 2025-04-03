@@ -25,13 +25,21 @@ namespace Hermes.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<PostResponseDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<PostResponseDto>> GetAll()
+        [ProducesResponseType(typeof(PagedResponseDto<PostResponseDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResponseDto<PostResponseDto>>> GetPaged([FromQuery] PaginationRequestDto pagination)
         {
-            var existingPosts = await _postService.GetAllPostsAsync();
-            var posts = _mapper.Map<IEnumerable<PostResponseDto>>(existingPosts);
+            var (posts, totalCount) = await _postService.GetPagedPostsAsync(pagination.PageNumber, pagination.PageSize);
 
-            return Ok(posts);
+            var postsDto = _mapper.Map<IEnumerable<PostResponseDto>>(posts);
+
+            var pagedResponse = new PagedResponseDto<PostResponseDto>(
+                postsDto,
+                pagination.PageNumber,
+                pagination.PageSize,
+                totalCount
+            );
+
+            return Ok(pagedResponse);
         }
 
         [HttpGet("{id:guid}")]
@@ -133,6 +141,5 @@ namespace Hermes.Controllers
 
             return NoContent();
         }
-
     }
 }

@@ -18,6 +18,11 @@ namespace Hermes.Core.Services
             return await _postRepository.GetAllAsync();
         }
 
+        public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPagedPostsAsync(int pageNumber, int pageSize)
+        {
+            return await _postRepository.GetPagedAsync(pageNumber, pageSize);
+        }
+
         public async Task<Post> GetPostByIdAsync(Guid id)
         {
             return await _postRepository.GetByIdAsync(id);
