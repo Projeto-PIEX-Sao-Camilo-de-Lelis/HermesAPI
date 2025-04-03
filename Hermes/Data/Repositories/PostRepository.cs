@@ -2,6 +2,7 @@
 using Hermes.Core.Interfaces.Data;
 using Hermes.Core.Interfaces.Repository;
 using Hermes.Core.Models;
+using Hermes.Helpers;
 
 namespace Hermes.Data.Repositories
 {
@@ -16,18 +17,20 @@ namespace Hermes.Data.Repositories
                 const string sql = @"
                     SELECT 
                         p.id,
-                        p.title, 
-                        p.content, 
-                        p.created_at, 
-                        p.updated_at, 
-                        p.is_published, 
-                        u.id AS author_id, 
+                        p.title,
+                        p.content,
+                        p.content_preview,
+                        p.author_id,
+                        p.created_at,
+                        p.updated_at,
+                        p.slug,
+                        p.is_published,
                         u.name AS author 
-                     FROM posts AS p 
-                     JOIN users AS u 
+                    FROM posts AS p 
+                    JOIN users AS u 
                         ON p.author_id = u.id 
-                     WHERE is_published = true 
-                     ORDER BY p.created_at DESC";
+                    WHERE is_published = true 
+                    ORDER BY p.created_at DESC";
 
                 return await connection.QueryAsync<Post>(sql);
             });
@@ -39,14 +42,17 @@ namespace Hermes.Data.Repositories
 
             const string postsSql = @"
                 SELECT 
-                    p.id,
-                    p.title,
-                    p.content,
-                    p.created_at,
-                    p.updated_at,
-                    p.is_published,
-                    u.id AS author_id,
-                    u.name AS author
+                      p.id,
+                        p.title,
+                        p.content,
+                        p.content_preview,
+                        p.author_id,
+                        p.created_at,
+                        p.updated_at,
+                        p.slug,
+                        p.is_published,
+                        u.id AS author_id,
+                        u.name AS author
                 FROM posts AS p
                 JOIN users AS u
                     ON p.author_id = u.id 
@@ -84,9 +90,11 @@ namespace Hermes.Data.Repositories
                         p.id,
                         p.title,
                         p.content,
+                        p.content_preview,
                         p.author_id,
                         p.created_at,
                         p.updated_at,
+                        p.slug,
                         p.is_published,
                         u.name AS author 
                     FROM posts AS p 
@@ -108,9 +116,11 @@ namespace Hermes.Data.Repositories
                         p.id,
                         p.title,
                         p.content,
+                        p.content_preview,
+                        p.author_id,
                         p.created_at,
                         p.updated_at,
-                        p.author_id,
+                        p.slug,
                         p.is_published,
                         u.id AS author_id,
                         u.name
@@ -128,20 +138,22 @@ namespace Hermes.Data.Repositories
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
+                entity.ContentPreview = ContentPreviewGenerator.GeneratePreview(entity.Content);
                 entity.CreatedAt = DateTime.UtcNow;
 
                 const string sql = @"
                     INSERT INTO posts 
-                        (title, content, created_at, author_id, is_published)
+                        (title, content, content_preview, created_at, author_id, is_published)
                     VALUES 
-                        (@Title, @Content, @CreatedAt, @AuthorId, @IsPublished)
+                        (@Title, @Content, @ContentPreview, @CreatedAt, @AuthorId, @IsPublished)
                     RETURNING 
-                        id, title, content, author_id, is_published";
+                        id, title, content, content_preview, author_id, is_published";
 
                 var parameters = new
                 {
                     entity.Title,
                     entity.Content,
+                    entity.ContentPreview,
                     entity.CreatedAt,
                     entity.AuthorId,
                     entity.IsPublished
@@ -156,23 +168,26 @@ namespace Hermes.Data.Repositories
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
+                entity.ContentPreview = ContentPreviewGenerator.GeneratePreview(entity.Content);
                 entity.UpdatedAt = DateTime.UtcNow;
 
                 const string sql = @"
                     UPDATE posts 
                     SET title = @Title,
                         content = @Content, 
+                        content_preview = @ContentPreview,
                         updated_at = @UpdatedAt, 
                         author_id = @AuthorId, 
                         is_published = @IsPublished
                     WHERE id = @Id
                     RETURNING 
-                        id, title, content, updated_at, author_id, is_published";
+                        id, title, content, content_preview updated_at, author_id, is_published";
 
                 var parameters = new
                 {
                     entity.Title,
                     entity.Content,
+                    entity.ContentPreview,
                     entity.UpdatedAt,
                     entity.AuthorId,
                     entity.IsPublished,
