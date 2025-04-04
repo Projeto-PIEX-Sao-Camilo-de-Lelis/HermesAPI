@@ -4,36 +4,36 @@ using Hermes.Core.Models;
 
 namespace Hermes.Core.Services
 {
-    public class PostService : IPostService
+    public class BlogPostService : IBlogPostService
     {
-        private readonly IPostRepository _postRepository;
+        private readonly IBlogPostRepository _postRepository;
 
-        public PostService(IPostRepository postRepository)
+        public BlogPostService(IBlogPostRepository postRepository)
         {
             _postRepository = postRepository;
         }
 
-        public async Task<IEnumerable<Post>> GetAllPostsAsync()
+        public async Task<IEnumerable<BlogPost>> GetAllPostsAsync()
         {
             return await _postRepository.GetAllAsync();
         }
 
-        public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPagedPostsAsync(int pageNumber, int pageSize)
+        public async Task<(IEnumerable<BlogPost> Posts, int TotalCount)> GetPagedPostsAsync(int pageNumber, int pageSize)
         {
             return await _postRepository.GetPagedAsync(pageNumber, pageSize);
         }
 
-        public async Task<Post> GetPostByIdAsync(Guid id)
+        public async Task<BlogPost> GetPostByIdAsync(Guid id)
         {
             return await _postRepository.GetByIdAsync(id);
         }
 
-        public async Task<IEnumerable<Post>> GetPostByAuthor(string author)
+        public async Task<IEnumerable<BlogPost>> GetPostByAuthor(string author)
         {
             return await _postRepository.GetByAuthorAsync(author);
         }
 
-        public async Task<Post> CreatePostAsync(Post post)
+        public async Task<BlogPost> CreatePostAsync(BlogPost post)
         {
             if (post is null)
             {
@@ -43,7 +43,7 @@ namespace Hermes.Core.Services
             return await _postRepository.CreateAsync(post);
         }
 
-        public async Task<Post> UpdatePostAsync(Guid id, Post post)
+        public async Task<BlogPost> UpdatePostAsync(Guid id, BlogPost post)
         {
             if (post is null)
             {

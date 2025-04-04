@@ -18,33 +18,23 @@ namespace Hermes.Core.Services
             return await _userRepository.GetAllAsync();
         }
 
-        public async Task<User> GetUserByEmailAsync(string email)
-        {
-            return await _userRepository.GetByEmailAsync(email);
-        }
-
-        public async Task<User> GetUserByIdAsync(Guid id)
+        public async Task<User?> GetUserByIdAsync(Guid id)
         {
             return await _userRepository.GetByIdAsync(id);
         }
 
-        public async Task<User> CreateUserAsync(User user)
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
-            if (user is null)
-            {
-                throw new ArgumentNullException(nameof(user), "O usuário não pode ser nulo!");
-            }
+            return await _userRepository.GetByEmailAsync(email);
+        }
 
+        public async Task<User?> CreateUserAsync(User user)
+        {
             return await _userRepository.CreateAsync(user);
         }
 
-        public async Task<User> UpdateUserAsync(Guid id, User user)
+        public async Task<User?> UpdateUserAsync(Guid id, User user)
         {
-            if (user is null)
-            {
-                throw new ArgumentNullException(nameof(user), "O usuário não pode ser nulo!");
-            }
-
             return await _userRepository.UpdateAsync(id, user);
         }
 

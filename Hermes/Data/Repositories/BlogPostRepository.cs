@@ -6,11 +6,11 @@ using Hermes.Helpers;
 
 namespace Hermes.Data.Repositories
 {
-    public class PostRepository : BaseRepository, IPostRepository
+    public class BlogPostRepository : BaseRepository, IBlogPostRepository
     {
-        public PostRepository(IDbConnectionFactory dbConnectionFactory) : base(dbConnectionFactory) { }
+        public BlogPostRepository(IDbConnectionFactory dbConnectionFactory) : base(dbConnectionFactory) { }
 
-        public async Task<IEnumerable<Post?>> GetAllAsync()
+        public async Task<IEnumerable<BlogPost?>> GetAllAsync()
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
@@ -32,11 +32,11 @@ namespace Hermes.Data.Repositories
                     WHERE is_published = true 
                     ORDER BY p.created_at DESC";
 
-                return await connection.QueryAsync<Post>(sql);
+                return await connection.QueryAsync<BlogPost>(sql);
             });
         }
 
-        public async Task<(IEnumerable<Post> Posts, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize)
+        public async Task<(IEnumerable<BlogPost> Posts, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize)
         {
             var offset = (pageNumber - 1) * pageSize;
 
@@ -65,12 +65,12 @@ namespace Hermes.Data.Repositories
                 FROM posts
                 WHERE is_published = true";
 
-            IEnumerable<Post> posts = Enumerable.Empty<Post>();
+            IEnumerable<BlogPost> posts = Enumerable.Empty<BlogPost>();
             int totalCount = 0;
 
             await ExecuteWithConnectionAsync(async connection =>
             {
-                posts = await connection.QueryAsync<Post>(postsSql, new { PageSize = pageSize, Offset = offset });
+                posts = await connection.QueryAsync<BlogPost>(postsSql, new { PageSize = pageSize, Offset = offset });
             });
 
             await ExecuteWithConnectionAsync(async connection =>
@@ -81,7 +81,7 @@ namespace Hermes.Data.Repositories
             return (posts, totalCount);
         }
 
-        public async Task<Post?> GetByIdAsync(Guid id)
+        public async Task<BlogPost?> GetByIdAsync(Guid id)
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
@@ -103,11 +103,11 @@ namespace Hermes.Data.Repositories
                     WHERE p.id = @Id AND is_published = true 
                     ORDER BY p.created_at DESC";
 
-                return await connection.QueryFirstOrDefaultAsync<Post>(sql, new { Id = id });
+                return await connection.QueryFirstOrDefaultAsync<BlogPost>(sql, new { Id = id });
             });
         }
 
-        public async Task<IEnumerable<Post?>> GetByAuthorAsync(string authorName)
+        public async Task<IEnumerable<BlogPost?>> GetByAuthorAsync(string authorName)
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
@@ -130,11 +130,11 @@ namespace Hermes.Data.Repositories
                     WHERE u.name = @AuthorName AND is_published = true
                     ORDER BY p.created_at DESC";
 
-                return await connection.QueryAsync<Post>(sql, new { AuthorName = authorName });
+                return await connection.QueryAsync<BlogPost>(sql, new { AuthorName = authorName });
             });
         }
 
-        public async Task<Post?> CreateAsync(Post entity)
+        public async Task<BlogPost?> CreateAsync(BlogPost entity)
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
@@ -159,12 +159,12 @@ namespace Hermes.Data.Repositories
                     entity.IsPublished
                 };
 
-                var createdPost = await connection.QuerySingleOrDefaultAsync<Post>(sql, parameters);
+                var createdPost = await connection.QuerySingleOrDefaultAsync<BlogPost>(sql, parameters);
                 return createdPost;
             });
         }
 
-        public async Task<Post?> UpdateAsync(Guid id, Post entity)
+        public async Task<BlogPost?> UpdateAsync(Guid id, BlogPost entity)
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
@@ -176,20 +176,20 @@ namespace Hermes.Data.Repositories
                     SET title = @Title,
                         content = @Content, 
                         content_preview = @ContentPreview,
-                        updated_at = @UpdatedAt, 
                         author_id = @AuthorId, 
+                        updated_at = @UpdatedAt, 
                         is_published = @IsPublished
                     WHERE id = @Id
                     RETURNING 
-                        id, title, content, content_preview updated_at, author_id, is_published";
+                        id, title, content, content_preview, author_id, updated_at, is_published";
 
                 var parameters = new
                 {
                     entity.Title,
                     entity.Content,
                     entity.ContentPreview,
-                    entity.UpdatedAt,
                     entity.AuthorId,
+                    entity.UpdatedAt,
                     entity.IsPublished,
                     Id = id
                 };

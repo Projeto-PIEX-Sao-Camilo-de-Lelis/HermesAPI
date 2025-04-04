@@ -2,7 +2,7 @@
 
 namespace Hermes.Core.Models
 {
-    public class Post
+    public class BlogPost
     {
         [Column("id")]
         public Guid Id { get; set; } = Guid.NewGuid();

@@ -24,6 +24,7 @@ namespace Hermes.Core.Services
         public async Task<AuthResponseDto?> AuthenticateAsync(UserLoginRequestDto userLoginRequest)
         {
             var user = await _userService.GetUserByEmailAsync(userLoginRequest.Email);
+
             if (user is null || !user.CheckPassword(userLoginRequest.Password))
             {
                 return null;
@@ -58,8 +59,7 @@ namespace Hermes.Core.Services
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Path = "/",
-                //Expires = DateTime.UtcNow.AddHours(1), // Cookie de sessão.
+                Path = "/"
             };
 
             _httpContextAccessor.HttpContext?.Response.Cookies.Append(AuthConstants.AuthTokenCookieName, token, cookieOptions);

@@ -1,0 +1,15 @@
+﻿using Hermes.Core.Models;
+
+namespace Hermes.Core.Interfaces.Service
+{
+    public interface IBlogPostService
+    {
+        Task<IEnumerable<BlogPost>> GetAllPostsAsync();
+        Task<(IEnumerable<BlogPost> Posts, int TotalCount)> GetPagedPostsAsync(int pageNumber, int pageSize);
+        Task<BlogPost> GetPostByIdAsync(Guid id);
+        Task<IEnumerable<BlogPost>> GetPostByAuthor(string author);
+        Task<BlogPost> CreatePostAsync(BlogPost post);
+        Task<BlogPost> UpdatePostAsync(Guid id,BlogPost post);
+        Task DeletePostAsync(Guid id);
+    }
+}

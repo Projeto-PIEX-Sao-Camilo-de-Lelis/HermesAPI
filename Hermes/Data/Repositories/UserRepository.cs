@@ -74,8 +74,6 @@ namespace Hermes.Data.Repositories
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
-                entity.CreatedAt = DateTime.UtcNow;
-
                 const string sql = @"
                     INSERT INTO users 
                         (name, email, password, created_at, is_active) 
@@ -83,8 +81,6 @@ namespace Hermes.Data.Repositories
                         (@Name, @Email, @Password, @CreatedAt, @IsActive) 
                     RETURNING 
                         id, name, email, created_at, is_active";
-
-                entity.SetPassword(entity.Password);
 
                 var parameters = new
                 {
@@ -104,9 +100,6 @@ namespace Hermes.Data.Repositories
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
-                entity.SetPassword(entity.Password);
-                entity.UpdatedAt = DateTime.UtcNow;
-
                 const string sql = @"
                     UPDATE users
                     SET name = @Name, 

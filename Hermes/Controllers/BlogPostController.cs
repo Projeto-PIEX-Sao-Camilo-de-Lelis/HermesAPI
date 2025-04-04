@@ -1,38 +1,35 @@
-﻿using AutoMapper;
-using Hermes.Core.Interfaces.Service;
+﻿using Hermes.Core.Interfaces.Service;
 using Microsoft.AspNetCore.Mvc;
 using Hermes.Core.Dtos.Responses;
 using Hermes.Core.Dtos.Requests;
 using Hermes.Core.Models;
 using Microsoft.AspNetCore.Authorization;
+using Hermes.Core.Extensions;
 
 namespace Hermes.Controllers
 {
     [Route("api/v1/posts")]
     [ApiController]
     [Authorize]
-    public class PostController : ControllerBase
+    public class BlogPostController : ControllerBase
     {
-        private readonly IPostService _postService;
-        private readonly IMapper _mapper;
+        private readonly IBlogPostService _postService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PostController(IPostService postService, IMapper mapper, IHttpContextAccessor httpContextAccessor)
+        public BlogPostController(IBlogPostService postService, IHttpContextAccessor httpContextAccessor)
         {
             _postService = postService;
-            _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(PagedResponseDto<PostResponseDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<PagedResponseDto<PostResponseDto>>> GetPaged([FromQuery] PaginationRequestDto pagination)
+        [ProducesResponseType(typeof(PagedResponseDto<BlogPostResponseDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResponseDto<BlogPostResponseDto>>> GetPaged([FromQuery] PaginationRequestDto pagination)
         {
             var (posts, totalCount) = await _postService.GetPagedPostsAsync(pagination.PageNumber, pagination.PageSize);
+            var postsDto = BlogPostMapper.ToResponseDto(posts);
 
-            var postsDto = _mapper.Map<IEnumerable<PostResponseDto>>(posts);
-
-            var pagedResponse = new PagedResponseDto<PostResponseDto>(
+            var pagedResponse = new PagedResponseDto<BlogPostResponseDto>(
                 postsDto,
                 pagination.PageNumber,
                 pagination.PageSize,
@@ -43,9 +40,9 @@ namespace Hermes.Controllers
         }
 
         [HttpGet("{id:guid}")]
-        [ProducesResponseType(typeof(PostResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BlogPostResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<PostResponseDto>> GetById(Guid id)
+        public async Task<ActionResult<BlogPostResponseDto>> GetById(Guid id)
         {
             var existingPost = await _postService.GetPostByIdAsync(id);
             if (existingPost is null)
@@ -53,28 +50,29 @@ namespace Hermes.Controllers
                 return NotFound(new { message = "Nenhum post encontrado com o id especificado." });
             }
 
-            var post = _mapper.Map<PostResponseDto>(existingPost);
+            var post = BlogPostMapper.ToResponseDto(existingPost);
             return Ok(post);
         }
 
         [HttpGet("author/{authorName}")]
-        [ProducesResponseType(typeof(IEnumerable<PostResponseDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<BlogPostResponseDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<PostResponseDto>> GetByAuthor(string authorName)
+        public async Task<ActionResult<BlogPostResponseDto>> GetByAuthor(string authorName)
         {
             var existingPosts = await _postService.GetPostByAuthor(authorName);
             if (existingPosts is null)
             {
                 return NotFound(new { message = "Nenhum post encontrado com o autor especificado." });
             }
-            var posts = _mapper.Map<IEnumerable<PostResponseDto>>(existingPosts);
+            var posts = BlogPostMapper.ToResponseDto(existingPosts);
+
             return Ok(posts);
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(PostResponseDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(BlogPostResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PostResponseDto>> Post([FromBody] PostCreateRequestDto postCreateRequest)
+        public async Task<ActionResult<BlogPostResponseDto>> Post([FromBody] BlogPostCreateRequestDto postCreateRequest)
         {
             if (!ModelState.IsValid)
             {
@@ -87,20 +85,20 @@ namespace Hermes.Controllers
                 return BadRequest(new { message = "Id do usuário não encontrado ou inválido!" });
             }
 
-            var postToCreate = _mapper.Map<Post>(postCreateRequest);
+            var postToCreate = postCreateRequest.ToEntity();
             postToCreate.AuthorId = authorId;
 
             var createPost = await _postService.CreatePostAsync(postToCreate);
-            var postResponse = _mapper.Map<PostResponseDto>(createPost);
+            var postResponse = BlogPostMapper.ToResponseDto(createPost);
 
             return CreatedAtAction(nameof(GetById), new { id = postResponse.Id }, postResponse);
         }
 
         [HttpPut("{id:guid}")]
-        [ProducesResponseType(typeof(PostResponseDto), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(BlogPostResponseDto), StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Post>> Put(Guid id, [FromBody] PostUpdateRequestDto postUpdateRequest)
+        public async Task<ActionResult<BlogPost>> Put(Guid id, [FromBody] BlogPostUpdateRequestDto postUpdateRequest)
         {
             if (!ModelState.IsValid)
             {
@@ -119,10 +117,10 @@ namespace Hermes.Controllers
                 return NotFound(new { message = "Nenhum post foi encontrado com o Id informado." });
             }
 
-            var postToUpdate = _mapper.Map(postUpdateRequest, existingPost);
-            postToUpdate.AuthorId = authorId;
+            BlogPostMapper.UpdateEntity(existingPost, postUpdateRequest);
+            existingPost.AuthorId = authorId;
 
-            await _postService.UpdatePostAsync(id, postToUpdate);
+            await _postService.UpdatePostAsync(id, existingPost);
             return NoContent();
         }
 

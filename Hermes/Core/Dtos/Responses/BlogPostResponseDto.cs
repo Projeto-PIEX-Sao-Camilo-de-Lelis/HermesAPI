@@ -1,6 +1,6 @@
 ﻿namespace Hermes.Core.Dtos.Responses
 {
-    public record PostResponseDto
+    public record BlogPostResponseDto
     {
         public Guid Id { get; init; }
         public required string Title { get; init; }
@@ -10,5 +10,6 @@
         public DateTime CreatedAt { get; init; }
         public DateTime? UpdatedAt { get; init; }
         public string? Slug { get; init; }
+        public bool IsPublished { get; init; }
     }
 }

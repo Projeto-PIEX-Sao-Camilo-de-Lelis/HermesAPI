@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Hermes.Core.Dtos.Requests;
+﻿using Hermes.Core.Dtos.Requests;
 using Hermes.Core.Dtos.Responses;
+using Hermes.Core.Extensions;
 using Hermes.Core.Interfaces.Service;
 using Hermes.Core.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -14,12 +14,10 @@ namespace Hermes.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IMapper _mapper;
 
-        public UserController(IUserService userService, IMapper mapper)
+        public UserController(IUserService userService)
         {
             _userService = userService;
-            _mapper = mapper;
         }
 
         [HttpGet]
@@ -27,7 +25,7 @@ namespace Hermes.Controllers
         public async Task<ActionResult<UserResponseDto>> GetAll()
         {
             var existingUsers = await _userService.GetAllUsersAsync();
-            var users = _mapper.Map<IEnumerable<UserResponseDto>>(existingUsers);
+            var users = UserMapper.ToResponseDto(existingUsers);
 
             return Ok(users);
         }
@@ -42,7 +40,7 @@ namespace Hermes.Controllers
             {
                 return NotFound(new { message = "Nenhum usuário encontrado com o id especificado." });
             }
-            var user = _mapper.Map<UserResponseDto>(existingUser);
+            var user = UserMapper.ToResponseDto(existingUser);
 
             return Ok(user);
         }
@@ -58,10 +56,10 @@ namespace Hermes.Controllers
                 return BadRequest();
             }
 
-            var userToCreate = _mapper.Map<User>(userCreateRequest);
+            var userToCreate = UserMapper.ToEntity(userCreateRequest);
             var createdUser = await _userService.CreateUserAsync(userToCreate);
 
-            var userResponse = _mapper.Map<UserResponseDto>(createdUser);
+            var userResponse = UserMapper.ToResponseDto(createdUser);
 
             return CreatedAtAction(nameof(GetById), new { userResponse.Id }, userResponse);
         }
@@ -88,9 +86,9 @@ namespace Hermes.Controllers
                 return NotFound();
             }
 
-            var userToUpdate = _mapper.Map(userUpdateRequest, existingUser);
- 
-            await _userService.UpdateUserAsync(userToUpdate.Id, userToUpdate);
+            UserMapper.UpdateEntity(existingUser, userUpdateRequest);
+            await _userService.UpdateUserAsync(existingUser.Id, existingUser);
+
             return NoContent();
         }
 
