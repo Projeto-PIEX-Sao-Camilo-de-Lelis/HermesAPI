@@ -1,6 +1,7 @@
 ﻿using Hermes.Core.Interfaces.Repository;
 using Hermes.Core.Interfaces.Service;
 using Hermes.Core.Models;
+using Hermes.Helpers;
 
 namespace Hermes.Core.Services
 {
@@ -28,9 +29,15 @@ namespace Hermes.Core.Services
             return await _postRepository.GetByIdAsync(id);
         }
 
+        public async Task<BlogPost> GetPostBySlugAsync(string slug)
+        {
+            return await _postRepository.GetBySlugAsync(slug);
+        }
+
         public async Task<IEnumerable<BlogPost>> GetPostByAuthor(string author)
         {
-            return await _postRepository.GetByAuthorAsync(author);
+            var posts = await _postRepository.GetByAuthorAsync(author);
+            return posts.Where(post => post != null).Cast<BlogPost>();
         }
 
         public async Task<BlogPost> CreatePostAsync(BlogPost post)
@@ -40,22 +47,41 @@ namespace Hermes.Core.Services
                 throw new ArgumentNullException(nameof(post), "O post não pode ser nulo!");
             }
 
+            post.Slug = ShortHandSlugGenerator.GenerateSlug(post.Title);
+            post.ContentPreview = ContentPreviewGenerator.GeneratePreview(post.Content);
+            post.CreatedAt = DateTime.UtcNow;
+
             return await _postRepository.CreateAsync(post);
         }
 
-        public async Task<BlogPost> UpdatePostAsync(Guid id, BlogPost post)
+        public async Task<BlogPost> UpdatePostAsync(Guid id, BlogPost updatedPost)
         {
-            if (post is null)
+            if (updatedPost is null)
             {
-                throw new ArgumentNullException(nameof(post), "O post não pode ser nulo!");
+                throw new ArgumentNullException(nameof(updatedPost), "O post não pode ser nulo!");
             }
 
-            return await _postRepository.UpdateAsync(id, post);
+            var existingPost = await _postRepository.GetByIdAsync(id);
+
+            if (TitleExists(existingPost.Title, updatedPost.Title))
+            {
+                updatedPost.Slug = ShortHandSlugGenerator.GenerateSlug(updatedPost.Title);
+            }
+
+            updatedPost.ContentPreview = ContentPreviewGenerator.GeneratePreview(updatedPost.Content);
+            updatedPost.UpdatedAt = DateTime.UtcNow;
+
+            return await _postRepository.UpdateAsync(id, updatedPost);
         }
 
         public async Task DeletePostAsync(Guid id)
         {
             await _postRepository.DeleteAsync(id);
+        }
+
+        private static bool TitleExists(string existingTitle, string newTitle)
+        {
+            return !newTitle.Equals(existingTitle);
         }
     }
 }

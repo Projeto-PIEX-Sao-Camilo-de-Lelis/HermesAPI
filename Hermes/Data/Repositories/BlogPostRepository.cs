@@ -17,13 +17,14 @@ namespace Hermes.Data.Repositories
                 const string sql = @"
                     SELECT 
                         p.id,
+                        p.slug,
                         p.title,
                         p.content,
                         p.content_preview,
                         p.author_id,
+                        p.published_at,
                         p.created_at,
                         p.updated_at,
-                        p.slug,
                         p.is_published,
                         u.name AS author 
                     FROM posts AS p 
@@ -43,16 +44,17 @@ namespace Hermes.Data.Repositories
             const string postsSql = @"
                 SELECT 
                       p.id,
-                        p.title,
-                        p.content,
-                        p.content_preview,
-                        p.author_id,
-                        p.created_at,
-                        p.updated_at,
-                        p.slug,
-                        p.is_published,
-                        u.id AS author_id,
-                        u.name AS author
+                      p.slug,
+                      p.title,
+                      p.content,
+                      p.content_preview,
+                      p.author_id,
+                      p.published_at, 
+                      p.created_at,
+                      p.updated_at,
+                      p.is_published,
+                      u.id AS author_id,
+                      u.name AS author
                 FROM posts AS p
                 JOIN users AS u
                     ON p.author_id = u.id 
@@ -88,13 +90,14 @@ namespace Hermes.Data.Repositories
                 const string sql = @"
                     SELECT 
                         p.id,
+                        p.slug,
                         p.title,
                         p.content,
                         p.content_preview,
                         p.author_id,
+                        p.published_at,
                         p.created_at,
                         p.updated_at,
-                        p.slug,
                         p.is_published,
                         u.name AS author 
                     FROM posts AS p 
@@ -107,6 +110,34 @@ namespace Hermes.Data.Repositories
             });
         }
 
+        public async Task<BlogPost?> GetBySlugAsync(string slug)
+        {
+            return await ExecuteWithConnectionAsync(async connection =>
+            {
+                const string sql = @"
+                    SELECT 
+                        p.id,
+                        p.slug,
+                        p.title,
+                        p.content,
+                        p.content_preview,
+                        p.author_id,
+                        p.published_at,
+                        p.created_at,
+                        p.updated_at,
+                        p.is_published,
+                        u.id AS author_id,
+                        u.name
+                    FROM posts AS p
+                    JOIN users AS u 
+                        ON p.author_id = u.id
+                    WHERE p.slug = @Slug AND is_published = true
+                    ORDER BY p.created_at DESC";
+
+                return await connection.QueryFirstOrDefaultAsync<BlogPost>(sql, new { Slug = slug });
+            });
+        }
+
         public async Task<IEnumerable<BlogPost?>> GetByAuthorAsync(string authorName)
         {
             return await ExecuteWithConnectionAsync(async connection =>
@@ -114,13 +145,14 @@ namespace Hermes.Data.Repositories
                 const string sql = @"
                     SELECT 
                         p.id,
+                        p.slug,
                         p.title,
                         p.content,
                         p.content_preview,
                         p.author_id,
+                        p.published_at,
                         p.created_at,
                         p.updated_at,
-                        p.slug,
                         p.is_published,
                         u.id AS author_id,
                         u.name
@@ -138,24 +170,23 @@ namespace Hermes.Data.Repositories
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
-                entity.ContentPreview = ContentPreviewGenerator.GeneratePreview(entity.Content);
-                entity.CreatedAt = DateTime.UtcNow;
-
                 const string sql = @"
                     INSERT INTO posts 
-                        (title, content, content_preview, created_at, author_id, is_published)
+                        (slug, title, content, content_preview, published_at, created_at, author_id, is_published)
                     VALUES 
-                        (@Title, @Content, @ContentPreview, @CreatedAt, @AuthorId, @IsPublished)
+                        (@Slug, @Title, @Content, @ContentPreview, @PublishedAt, @CreatedAt, @AuthorId, @IsPublished)
                     RETURNING 
-                        id, title, content, content_preview, author_id, is_published";
+                        id, slug, title, content, content_preview, published_at, is_published";
 
                 var parameters = new
                 {
+                    entity.Slug,
                     entity.Title,
                     entity.Content,
                     entity.ContentPreview,
-                    entity.CreatedAt,
                     entity.AuthorId,
+                    entity.CreatedAt,
+                    entity.PublishedAt,
                     entity.IsPublished
                 };
 
@@ -168,12 +199,10 @@ namespace Hermes.Data.Repositories
         {
             return await ExecuteWithConnectionAsync(async connection =>
             {
-                entity.ContentPreview = ContentPreviewGenerator.GeneratePreview(entity.Content);
-                entity.UpdatedAt = DateTime.UtcNow;
-
                 const string sql = @"
                     UPDATE posts 
-                    SET title = @Title,
+                    SET slug = @Slug,
+                        title = @Title,
                         content = @Content, 
                         content_preview = @ContentPreview,
                         author_id = @AuthorId, 
@@ -181,10 +210,11 @@ namespace Hermes.Data.Repositories
                         is_published = @IsPublished
                     WHERE id = @Id
                     RETURNING 
-                        id, title, content, content_preview, author_id, updated_at, is_published";
+                        id, slug, title, content, content_preview, updated_at, is_published";
 
                 var parameters = new
                 {
+                    entity.Slug,
                     entity.Title,
                     entity.Content,
                     entity.ContentPreview,

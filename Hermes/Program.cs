@@ -1,3 +1,4 @@
+using Dapper;
 using DotNetEnv;
 using Hermes.Configs.Authentication;
 using Hermes.Configs.Cors;
@@ -9,6 +10,7 @@ using Hermes.Core.Interfaces.Repository;
 using Hermes.Core.Interfaces.Service;
 using Hermes.Core.Services;
 using Hermes.Data.Repositories;
+using Hermes.Data.TypeHandlers;
 
 namespace Hermes
 {
@@ -40,6 +42,7 @@ namespace Hermes
             // Database Connection.
             builder.Services.AddSingleton<IDbConnectionFactory>(provider =>
             new PostgresConnectionFactory(connectionString));
+            SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
 
             // Dependencies Injection.
             builder.Services.AddScoped<IUserRepository, UserRepository>();

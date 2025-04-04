@@ -54,17 +54,17 @@ namespace Hermes.Controllers
             return Ok(post);
         }
 
-        [HttpGet("author/{authorName}")]
-        [ProducesResponseType(typeof(IEnumerable<BlogPostResponseDto>), StatusCodes.Status200OK)]
+        [HttpGet("slug/{slug}")]
+        [ProducesResponseType(typeof(BlogPostResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BlogPostResponseDto>> GetByAuthor(string authorName)
+        public async Task<ActionResult<BlogPostResponseDto>> GetBySlug(string slug)
         {
-            var existingPosts = await _postService.GetPostByAuthor(authorName);
-            if (existingPosts is null)
+            var existingPost = await _postService.GetPostBySlugAsync(slug);
+            if (existingPost is null)
             {
-                return NotFound(new { message = "Nenhum post encontrado com o autor especificado." });
+                return NotFound(new { message = "Nenhum post encontrado com a slug especificada." });
             }
-            var posts = BlogPostMapper.ToResponseDto(existingPosts);
+            var posts = BlogPostMapper.ToResponseDto(existingPost);
 
             return Ok(posts);
         }

@@ -24,7 +24,7 @@ namespace Hermes.Core.Extensions
                 Content = post.Content,
                 ContentPreview = post.ContentPreview,
                 Author = post.Author,
-                CreatedAt = post.CreatedAt,
+                PublishedAt = post.PublishedAt,
                 UpdatedAt = post.UpdatedAt,
                 Slug = post.Slug,
                 IsPublished = post.IsPublished

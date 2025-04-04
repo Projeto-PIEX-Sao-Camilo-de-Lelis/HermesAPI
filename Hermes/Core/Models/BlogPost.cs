@@ -20,6 +20,9 @@ namespace Hermes.Core.Models
         public Guid AuthorId { get; set; } = Guid.NewGuid();
         public string Author { get; set; } = string.Empty;
 
+        [Column("published_at")]
+        public DateOnly PublishedAt { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
+
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
