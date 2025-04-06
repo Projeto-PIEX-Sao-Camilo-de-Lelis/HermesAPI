@@ -93,51 +93,5 @@ namespace Hermes.Controllers
 
             return CreatedAtAction(nameof(GetById), new { id = postResponse.Id }, postResponse);
         }
-
-        [HttpPut("{id:guid}")]
-        [ProducesResponseType(typeof(BlogPostResponseDto), StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BlogPost>> Put(Guid id, [FromBody] BlogPostUpdateRequestDto postUpdateRequest)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var userIdClaim = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(c => c.Type == "userId");
-            if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out Guid authorId))
-            {
-                return BadRequest(new { message = "Id do usuário não encontrado ou inválido!" });
-            }
-
-            var existingPost = await _postService.GetPostByIdAsync(id);
-            if (existingPost is null)
-            {
-                return NotFound(new { message = "Nenhum post foi encontrado com o Id informado." });
-            }
-
-            BlogPostMapper.UpdateEntity(existingPost, postUpdateRequest);
-            existingPost.AuthorId = authorId;
-
-            await _postService.UpdatePostAsync(id, existingPost);
-            return NoContent();
-        }
-
-        [HttpDelete]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> Delete(Guid id)
-        {
-            var existingPost = await _postService.GetPostByIdAsync(id);
-            if (existingPost is null)
-            {
-                return NotFound(new { message = "Nenhum post foi encontrado com o Id informado." });
-            }
-
-            await _postService.DeletePostAsync(id);
-
-            return NoContent();
-        }
     }
 }

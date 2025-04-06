@@ -242,5 +242,21 @@ namespace Hermes.Data.Repositories
                 await connection.ExecuteAsync(sql, new { Id = id, UpdatedAt = DateTime.UtcNow });
             });
         }
+
+        public async Task<bool> SlugExistsAsync(string slug)
+        {
+            return await ExecuteWithConnectionAsync(async connection =>
+            {
+                const string sql = @"
+                    SELECT COUNT(slug)
+                    FROM posts 
+                    WHERE slug = @Slug AND is_published = true";
+
+                var count = await connection.ExecuteScalarAsync<int>(sql, new { Slug = slug });
+                Console.WriteLine($"[DEBUG] Quantidade de slugs encontradas: {count}");
+
+                return count > 0;
+            });
+        }
     }
 }

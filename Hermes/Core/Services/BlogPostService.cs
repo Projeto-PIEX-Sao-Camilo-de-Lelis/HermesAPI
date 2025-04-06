@@ -2,6 +2,7 @@
 using Hermes.Core.Interfaces.Service;
 using Hermes.Core.Models;
 using Hermes.Helpers;
+using Microsoft.Extensions.Hosting;
 
 namespace Hermes.Core.Services
 {
@@ -47,7 +48,8 @@ namespace Hermes.Core.Services
                 throw new ArgumentNullException(nameof(post), "O post não pode ser nulo!");
             }
 
-            post.Slug = ShortHandSlugGenerator.GenerateSlug(post.Title);
+            bool slugExists = await CheckSlugExistsAsync(post);
+            post.Slug = ShortHandSlugGenerator.GenerateUniqueSlug(post.Title, slugExists);
             post.ContentPreview = ContentPreviewGenerator.GeneratePreview(post.Content);
             post.CreatedAt = DateTime.UtcNow;
 
@@ -56,18 +58,19 @@ namespace Hermes.Core.Services
 
         public async Task<BlogPost> UpdatePostAsync(Guid id, BlogPost updatedPost)
         {
+            var existingPost = await _postRepository.GetByIdAsync(id);
+
+            if (existingPost is null)
+            {
+                throw new ArgumentNullException(nameof(existingPost), $"O post com id {id} não existe!");
+            }
+
             if (updatedPost is null)
             {
                 throw new ArgumentNullException(nameof(updatedPost), "O post não pode ser nulo!");
             }
 
-            var existingPost = await _postRepository.GetByIdAsync(id);
-
-            if (TitleExists(existingPost.Title, updatedPost.Title))
-            {
-                updatedPost.Slug = ShortHandSlugGenerator.GenerateSlug(updatedPost.Title);
-            }
-
+            updatedPost.Slug = ShortHandSlugGenerator.GenerateSlug(updatedPost.Title);
             updatedPost.ContentPreview = ContentPreviewGenerator.GeneratePreview(updatedPost.Content);
             updatedPost.UpdatedAt = DateTime.UtcNow;
 
@@ -79,9 +82,11 @@ namespace Hermes.Core.Services
             await _postRepository.DeleteAsync(id);
         }
 
-        private static bool TitleExists(string existingTitle, string newTitle)
+        private async Task<bool> CheckSlugExistsAsync(BlogPost post)
         {
-            return !newTitle.Equals(existingTitle);
+            var generatedSlug = ShortHandSlugGenerator.GenerateSlug(post.Title);
+            bool slugExists = await _postRepository.SlugExistsAsync(generatedSlug);
+            return slugExists;
         }
     }
 }
