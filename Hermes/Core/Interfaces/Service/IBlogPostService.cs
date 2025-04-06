@@ -9,7 +9,7 @@ namespace Hermes.Core.Interfaces.Service
         Task<BlogPost> GetPostByIdAsync(Guid id);
         Task<BlogPost> GetPostBySlugAsync(string slug);
         Task<IEnumerable<BlogPost>> GetPostByAuthor(string author);
-        Task<BlogPost> CreatePostAsync(BlogPost post);
+        Task<BlogPost> CreatePostAsync(BlogPost post, int contentPreviewMaxLength);
         Task<BlogPost> UpdatePostAsync(Guid id,BlogPost post);
         Task DeletePostAsync(Guid id);
     }

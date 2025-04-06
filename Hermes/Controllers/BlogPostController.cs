@@ -5,6 +5,8 @@ using Hermes.Core.Dtos.Requests;
 using Hermes.Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Hermes.Core.Extensions;
+using Swashbuckle.AspNetCore.Annotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Hermes.Controllers
 {
@@ -72,9 +74,12 @@ namespace Hermes.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BlogPostResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<BlogPostResponseDto>> Post([FromBody] BlogPostCreateRequestDto postCreateRequest)
+        
+        public async Task<ActionResult<BlogPostResponseDto>> Post(
+            [FromBody] BlogPostCreateRequestDto postCreateRequest,
+            [FromQuery] int contentPreviewMaxLength = 150)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || contentPreviewMaxLength > 250)
             {
                 return BadRequest(ModelState);
             }
@@ -88,7 +93,7 @@ namespace Hermes.Controllers
             var postToCreate = postCreateRequest.ToEntity();
             postToCreate.AuthorId = authorId;
 
-            var createPost = await _postService.CreatePostAsync(postToCreate);
+            var createPost = await _postService.CreatePostAsync(postToCreate, contentPreviewMaxLength);
             var postResponse = BlogPostMapper.ToResponseDto(createPost);
 
             return CreatedAtAction(nameof(GetById), new { id = postResponse.Id }, postResponse);

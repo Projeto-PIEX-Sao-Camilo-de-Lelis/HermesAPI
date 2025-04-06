@@ -41,7 +41,7 @@ namespace Hermes.Core.Services
             return posts.Where(post => post != null).Cast<BlogPost>();
         }
 
-        public async Task<BlogPost> CreatePostAsync(BlogPost post)
+        public async Task<BlogPost> CreatePostAsync(BlogPost post, int contentPreviewMaxLength)
         {
             if (post is null)
             {
@@ -50,7 +50,7 @@ namespace Hermes.Core.Services
 
             bool slugExists = await CheckSlugExistsAsync(post);
             post.Slug = ShortHandSlugGenerator.GenerateUniqueSlug(post.Title, slugExists);
-            post.ContentPreview = ContentPreviewGenerator.GeneratePreview(post.Content);
+            post.ContentPreview = ContentPreviewGenerator.GeneratePreview(post.Content, contentPreviewMaxLength);
             post.CreatedAt = DateTime.UtcNow;
 
             return await _postRepository.CreateAsync(post);
