@@ -1,7 +1,7 @@
-﻿using AutoMapper;
-using Hermes.Core.Dtos.Requests;
+﻿using Hermes.Core.Dtos.Requests;
 using Hermes.Core.Dtos.Responses;
-using Hermes.Core.Interfaces.Services;
+using Hermes.Core.Extensions;
+using Hermes.Core.Interfaces.Service;
 using Hermes.Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,28 +11,26 @@ namespace Hermes.Controllers
     [Route("api/v1/users")]
     [ApiController]
     [Authorize]
-    public class UsersController : ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IMapper _mapper;
 
-        public UsersController(IUserService userService, IMapper mapper)
+        public UserController(IUserService userService)
         {
             _userService = userService;
-            _mapper = mapper;
         }
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<UserResponseDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<UserResponseDto>> GetAll()
         {
-            var existingUser = await _userService.GetAllUsersAsync();
-            var users = _mapper.Map<IEnumerable<UserResponseDto>>(existingUser);
+            var existingUsers = await _userService.GetAllUsersAsync();
+            var users = UserMapper.ToResponseDto(existingUsers);
 
             return Ok(users);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<UserResponseDto>> GetById(Guid id)
@@ -40,9 +38,9 @@ namespace Hermes.Controllers
             var existingUser = await _userService.GetUserByIdAsync(id);
             if (existingUser is null)
             {
-                return NotFound();
+                return NotFound(new { message = "Nenhum usuário encontrado com o id especificado." });
             }
-            var user = _mapper.Map<UserResponseDto>(existingUser);
+            var user = UserMapper.ToResponseDto(existingUser);
 
             return Ok(user);
         }
@@ -58,15 +56,15 @@ namespace Hermes.Controllers
                 return BadRequest();
             }
 
-            var userToCreate = _mapper.Map<User>(userCreateRequest);
+            var userToCreate = UserMapper.ToEntity(userCreateRequest);
             var createdUser = await _userService.CreateUserAsync(userToCreate);
 
-            var userResponse = _mapper.Map<UserResponseDto>(createdUser);
+            var userResponse = UserMapper.ToResponseDto(createdUser);
 
             return CreatedAtAction(nameof(GetById), new { userResponse.Id }, userResponse);
         }
 
-        [HttpPut]
+        [HttpPut("{email}")]
         [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -88,9 +86,9 @@ namespace Hermes.Controllers
                 return NotFound();
             }
 
-            var userToUpdate = _mapper.Map(userUpdateRequest, existingUser);
- 
-            await _userService.UpdateUserAsync(userToUpdate);
+            UserMapper.UpdateEntity(existingUser, userUpdateRequest);
+            await _userService.UpdateUserAsync(existingUser.Id, existingUser);
+
             return NoContent();
         }
 

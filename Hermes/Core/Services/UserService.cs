@@ -1,5 +1,5 @@
-﻿using Hermes.Core.Interfaces.Repositories;
-using Hermes.Core.Interfaces.Services;
+﻿using Hermes.Core.Interfaces.Repository;
+using Hermes.Core.Interfaces.Service;
 using Hermes.Core.Models;
 
 namespace Hermes.Core.Services
@@ -18,34 +18,24 @@ namespace Hermes.Core.Services
             return await _userRepository.GetAllAsync();
         }
 
-        public async Task<User> GetUserByEmailAsync(string email)
-        {
-            return await _userRepository.GetByEmailAsync(email);
-        }
-
-        public async Task<User> GetUserByIdAsync(Guid id)
+        public async Task<User?> GetUserByIdAsync(Guid id)
         {
             return await _userRepository.GetByIdAsync(id);
         }
 
-        public async Task<User> CreateUserAsync(User user)
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
-            if (user is null)
-            {
-                throw new Exception("O usuário não pode ser nulo!");
-            }
+            return await _userRepository.GetByEmailAsync(email);
+        }
 
+        public async Task<User?> CreateUserAsync(User user)
+        {
             return await _userRepository.CreateAsync(user);
         }
 
-        public async Task<User> UpdateUserAsync(User user)
+        public async Task<User?> UpdateUserAsync(Guid id, User user)
         {
-            if (user is null)
-            {
-                throw new Exception("O usuário não pode ser nulo!");
-            }
-
-            return await _userRepository.UpdateAsync(user);
+            return await _userRepository.UpdateAsync(id, user);
         }
 
         public async Task DeleteUserAsync(Guid id)

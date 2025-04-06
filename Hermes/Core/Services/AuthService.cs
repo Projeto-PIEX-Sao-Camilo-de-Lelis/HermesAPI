@@ -4,18 +4,18 @@ using System.Text;
 using Hermes.Configs.Constants;
 using Hermes.Core.Dtos.Requests;
 using Hermes.Core.Dtos.Responses;
-using Hermes.Core.Interfaces.Services;
+using Hermes.Core.Interfaces.Service;
 using Hermes.Core.Models;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Hermes.Core.Services
 {
-    public class AuthenticationService : IAuthService
+    public class AuthService : IAuthService
     {
         private readonly IUserService _userService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthenticationService(IUserService userService, IHttpContextAccessor httpContextAccessor)
+        public AuthService(IUserService userService, IHttpContextAccessor httpContextAccessor)
         {
             _userService = userService;
             _httpContextAccessor = httpContextAccessor;
@@ -24,6 +24,7 @@ namespace Hermes.Core.Services
         public async Task<AuthResponseDto?> AuthenticateAsync(UserLoginRequestDto userLoginRequest)
         {
             var user = await _userService.GetUserByEmailAsync(userLoginRequest.Email);
+
             if (user is null || !user.CheckPassword(userLoginRequest.Password))
             {
                 return null;
@@ -58,8 +59,7 @@ namespace Hermes.Core.Services
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Path = "/",
-                Expires = DateTime.UtcNow.AddHours(1),
+                Path = "/"
             };
 
             _httpContextAccessor.HttpContext?.Response.Cookies.Append(AuthConstants.AuthTokenCookieName, token, cookieOptions);
@@ -90,7 +90,7 @@ namespace Hermes.Core.Services
             ci.AddClaim(new Claim("userId", user.Id.ToString()));
             ci.AddClaim(new Claim("username", user.Name));
             ci.AddClaim(new Claim(ClaimTypes.Name, user.Email));
-            ci.AddClaim(new Claim(ClaimTypes.Role, user.UserRole.ToString()));
+            ci.AddClaim(new Claim(ClaimTypes.Role, user.Role.ToString()));
 
             return ci;
         }
