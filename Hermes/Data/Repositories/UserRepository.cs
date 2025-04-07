@@ -76,17 +76,18 @@ namespace Hermes.Data.Repositories
             {
                 const string sql = @"
                     INSERT INTO users 
-                        (name, email, password, created_at, is_active) 
+                        (name, email, password, role, created_at, is_active) 
                     VALUES 
-                        (@Name, @Email, @Password, @CreatedAt, @IsActive) 
+                        (@Name, @Email, @Password, @Role::role, @CreatedAt, @IsActive) 
                     RETURNING 
-                        id, name, email, created_at, is_active";
+                        id, name, email, role, created_at, is_active";
 
                 var parameters = new
                 {
                     entity.Name,
                     entity.Email,
                     entity.Password,
+                    Role = entity.Role.ToString(),
                     entity.CreatedAt,
                     entity.IsActive
                 };
@@ -105,17 +106,19 @@ namespace Hermes.Data.Repositories
                     SET name = @Name, 
                         email = @Email, 
                         password = @Password,
+                        role = @Role::role,
                         updated_at = @UpdatedAt, 
                         is_active = @IsActive
                     WHERE id = @Id
                     RETURNING 
-                        id, name, email, updated_at, is_active";
+                        id, name, email, role, updated_at, is_active";
 
                 var parameters = new
                 {
                     entity.Name,
                     entity.Email,
                     entity.Password,
+                    Role = entity.Role.ToString(),
                     entity.UpdatedAt,
                     entity.IsActive,
                     Id = id

@@ -36,7 +36,7 @@ namespace Hermes.Data.TypeHandlers
                 .GetField(value.ToString())!
                 .GetCustomAttribute<EnumMemberAttribute>()?.Value;
 
-            parameter.Value = enumMemberValue ?? value.ToString();
+            parameter.Value = $"{enumMemberValue ?? value.ToString()}::role";
             parameter.DbType = DbType.String;
         }
     }

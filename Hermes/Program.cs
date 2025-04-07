@@ -42,6 +42,7 @@ namespace Hermes
             // Database Connection.
             builder.Services.AddSingleton<IDbConnectionFactory>(provider =>
             new PostgresConnectionFactory(connectionString));
+            SqlMapper.AddTypeHandler(new RoleTypeHandler());
             SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
 
             // Dependencies Injection.

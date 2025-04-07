@@ -1,5 +1,6 @@
-﻿using Dapper;
-using System.Data;
+﻿using System.Data;
+using Dapper;
+using Hermes.Core.Enums;
 using Hermes.Core.Interfaces.Data;
 using Hermes.Data.TypeHandlers;
 using Npgsql;
@@ -35,7 +36,6 @@ namespace Hermes.Configs.Postgresql
             try
             {
                 connection.Open();
-                SqlMapper.AddTypeHandler(new RoleTypeHandler());
                 DefaultTypeMap.MatchNamesWithUnderscores = true;
             }
             catch (NpgsqlException ex)

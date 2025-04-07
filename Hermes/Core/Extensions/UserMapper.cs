@@ -29,6 +29,7 @@ namespace Hermes.Core.Extensions
                 Id = user.Id,
                 Name = user.Name,
                 Email = user.Email,
+                Role = user.Role,
                 CreatedAt = user.CreatedAt ?? DateTime.UtcNow,
                 UpdatedAt = user.UpdatedAt,
                 IsActive = user.IsActive
