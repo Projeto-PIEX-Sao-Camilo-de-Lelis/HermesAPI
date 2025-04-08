@@ -3,6 +3,7 @@ using Hermes.Configs.Constants;
 using Hermes.Core.Interfaces.Cache;
 using Hermes.Core.Interfaces.Repository;
 using Hermes.Core.Models;
+using Microsoft.Extensions.Hosting;
 
 namespace Hermes.Core.Services.Cache
 {
@@ -165,6 +166,30 @@ namespace Hermes.Core.Services.Cache
             await _cacheProvider.SetAsync(string.Format(CacheConstants.PostBySlugKeyPattern, post.Slug), post, _cacheExpiration);
 
             await InvalidateAllPostsCacheAsync();
+        }
+
+        public async Task AppendPostToCacheAsync(BlogPost newPost)
+        {
+            try
+            {
+                var cachedPosts = await _cacheProvider.GetAsync<IEnumerable<BlogPost>>(CacheConstants.AllPostsKey);
+                if (cachedPosts is not null)
+                {
+                    var refreshedPostsCache = cachedPosts.Append(newPost).ToList();
+                    await _cacheProvider.SetAsync(CacheConstants.AllPostsKey, refreshedPostsCache, _cacheExpiration);
+                }
+                else
+                {
+                    await _cacheProvider.SetAsync(CacheConstants.AllPostsKey, new List<BlogPost> { newPost }, _cacheExpiration);
+                }
+
+                await _cacheProvider.SetAsync(string.Format(CacheConstants.PostByIdKeyPattern, newPost.Id), newPost, _cacheExpiration);
+                await _cacheProvider.SetAsync(string.Format(CacheConstants.PostBySlugKeyPattern, newPost.Slug), newPost, _cacheExpiration);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ocorreu um erro ao tentar adicionar o post ao cache.");
+            }
         }
 
         public async Task InvalidatePostCacheAsync(Guid id)

@@ -2,11 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Hermes.Core.Dtos.Responses;
 using Hermes.Core.Dtos.Requests;
-using Hermes.Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Hermes.Core.Extensions;
-using Swashbuckle.AspNetCore.Annotations;
-using System.ComponentModel.DataAnnotations;
 
 namespace Hermes.Controllers
 {
@@ -26,6 +23,7 @@ namespace Hermes.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponseDto<BlogPostResponseDto>), StatusCodes.Status200OK)]
+        [AllowAnonymous]
         public async Task<ActionResult<PagedResponseDto<BlogPostResponseDto>>> GetPaged([FromQuery] PaginationRequestDto pagination)
         {
             var (posts, totalCount) = await _blogPostService.GetPagedPostsAsync(pagination.PageNumber, pagination.PageSize);

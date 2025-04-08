@@ -9,6 +9,7 @@ namespace Hermes.Core.Interfaces.Cache
         Task<IEnumerable<BlogPost>> GetAllPostsAsync();
         Task<(IEnumerable<BlogPost> Posts, int TotalCount)> GetPagedPostsAsync(int pageNumber, int pageSize);
         Task CachePostAsync(BlogPost post);
+        Task AppendPostToCacheAsync(BlogPost newPost);
         Task InvalidatePostCacheAsync(Guid id);
         Task InvalidateAllPostsCacheAsync();
     }

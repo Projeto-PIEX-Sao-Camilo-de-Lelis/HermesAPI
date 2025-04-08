@@ -63,7 +63,7 @@ namespace Hermes.Core.Services
 
             if (createdPost is not null)
             {
-                await _cacheService.CachePostAsync(createdPost);
+                await _cacheService.AppendPostToCacheAsync(createdPost);
             }
 
             return createdPost;
