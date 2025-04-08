@@ -15,12 +15,12 @@ namespace Hermes.Controllers
     [Authorize]
     public class BlogPostController : ControllerBase
     {
-        private readonly IBlogPostService _postService;
+        private readonly IBlogPostService _blogPostService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public BlogPostController(IBlogPostService postService, IHttpContextAccessor httpContextAccessor)
         {
-            _postService = postService;
+            _blogPostService = postService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -28,7 +28,7 @@ namespace Hermes.Controllers
         [ProducesResponseType(typeof(PagedResponseDto<BlogPostResponseDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<PagedResponseDto<BlogPostResponseDto>>> GetPaged([FromQuery] PaginationRequestDto pagination)
         {
-            var (posts, totalCount) = await _postService.GetPagedPostsAsync(pagination.PageNumber, pagination.PageSize);
+            var (posts, totalCount) = await _blogPostService.GetPagedPostsAsync(pagination.PageNumber, pagination.PageSize);
             var postsDto = BlogPostMapper.ToResponseDto(posts);
 
             var pagedResponse = new PagedResponseDto<BlogPostResponseDto>(
@@ -46,7 +46,7 @@ namespace Hermes.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<BlogPostResponseDto>> GetById(Guid id)
         {
-            var existingPost = await _postService.GetPostByIdAsync(id);
+            var existingPost = await _blogPostService.GetPostByIdAsync(id);
             if (existingPost is null)
             {
                 return NotFound(new { message = "Nenhum post encontrado com o id especificado." });
@@ -61,7 +61,7 @@ namespace Hermes.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<BlogPostResponseDto>> GetBySlug(string slug)
         {
-            var existingPost = await _postService.GetPostBySlugAsync(slug);
+            var existingPost = await _blogPostService.GetPostBySlugAsync(slug);
             if (existingPost is null)
             {
                 return NotFound(new { message = "Nenhum post encontrado com a slug especificada." });
@@ -93,7 +93,7 @@ namespace Hermes.Controllers
             var postToCreate = postCreateRequest.ToEntity();
             postToCreate.AuthorId = authorId;
 
-            var createPost = await _postService.CreatePostAsync(postToCreate, contentPreviewMaxLength);
+            var createPost = await _blogPostService.CreatePostAsync(postToCreate, contentPreviewMaxLength);
             var postResponse = BlogPostMapper.ToResponseDto(createPost);
 
             return CreatedAtAction(nameof(GetById), new { id = postResponse.Id }, postResponse);

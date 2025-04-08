@@ -19,25 +19,21 @@ namespace Hermes.Core.Services
 
         public async Task<IEnumerable<BlogPost>> GetAllPostsAsync()
         {
-            //return await _postRepository.GetAllAsync();
             return await _cacheService.GetAllPostsAsync();
         }
 
         public async Task<(IEnumerable<BlogPost> Posts, int TotalCount)> GetPagedPostsAsync(int pageNumber, int pageSize)
         {
-            //return await _postRepository.GetPagedAsync(pageNumber, pageSize);
             return await _cacheService.GetPagedPostsAsync(pageNumber, pageSize);
         }
 
         public async Task<BlogPost> GetPostByIdAsync(Guid id)
         {
-            //return await _postRepository.GetByIdAsync(id);
             return await _cacheService.GetPostByIdAsync(id);
         }
 
         public async Task<BlogPost> GetPostBySlugAsync(string slug)
         {
-            //return await _postRepository.GetBySlugAsync(slug);
             return await _cacheService.GetPostBySlugAsync(slug);
         }
 
@@ -65,7 +61,10 @@ namespace Hermes.Core.Services
                 throw new InvalidOperationException("Ocorreu um erro ao tentar criar o post.");
             }
 
-            await _cacheService.CachePostAsync(createdPost);
+            if (createdPost is not null)
+            {
+                await _cacheService.CachePostAsync(createdPost);
+            }
 
             return createdPost;
         }
@@ -103,6 +102,17 @@ namespace Hermes.Core.Services
         {
             await _postRepository.DeleteAsync(id);
             await _cacheService.InvalidatePostCacheAsync(id);
+        }
+
+        public async Task SynchronizeBlogPostsCacheAsync()
+        {
+            await _cacheService.InvalidateAllPostsCacheAsync();
+            var allPosts = await _postRepository.GetAllAsync();
+
+            foreach (var post in allPosts)
+            {
+                await _cacheService.CachePostAsync(post);
+            }
         }
 
         private async Task<bool> CheckSlugExistsAsync(BlogPost post)
