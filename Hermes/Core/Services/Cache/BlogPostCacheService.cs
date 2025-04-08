@@ -11,28 +11,48 @@ namespace Hermes.Core.Services.Cache
         private readonly ICacheProvider _cacheProvider;
         private readonly IBlogPostRepository _blogPostRepository;
         private readonly TimeSpan _cacheExpiration;
+        private readonly ILogger<BlogPostCacheService> _logger;
 
-        public BlogPostCacheService(ICacheProvider cacheProvider, IBlogPostRepository blogPostRepository, CacheSettings cacheSettings)
+        public BlogPostCacheService(
+            ICacheProvider cacheProvider, 
+            IBlogPostRepository blogPostRepository, 
+            CacheSettings cacheSettings, 
+            ILogger<BlogPostCacheService> logger)
         {
             _cacheProvider = cacheProvider;
             _blogPostRepository = blogPostRepository;
             _cacheExpiration = TimeSpan.FromMinutes(cacheSettings.Expiration);
+            _logger = logger;
         }
 
         public async Task<BlogPost?> GetPostByIdAsync(Guid id)
         {
             string cacheKey = string.Format(CacheConstants.PostByIdKeyPattern, id);
 
-            var cachedPost = await _cacheProvider.GetAsync<BlogPost>(cacheKey);
-            if (cachedPost is not null)
+            try
             {
-                return cachedPost;
+                var cachedPost = await _cacheProvider.GetAsync<BlogPost>(cacheKey);
+                if (cachedPost is not null)
+                {
+                    return cachedPost;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ocorreu um erro ao tentar obter o post com o ID: {Id} do cache", id);
             }
 
             var post = await _blogPostRepository.GetByIdAsync(id);
             if (post is not null)
             {
-                await _cacheProvider.SetAsync(cacheKey, post, _cacheExpiration);
+                try
+                {
+                    await _cacheProvider.SetAsync(cacheKey, post, _cacheExpiration);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Ocorreu um erro ao tentar inserir o post com o ID: {Id} no cache.", id);
+                }
             }
 
             return post;
@@ -42,16 +62,30 @@ namespace Hermes.Core.Services.Cache
         {
             string cacheKey = string.Format(CacheConstants.PostBySlugKeyPattern, slug);
 
-            var cachedPost = await _cacheProvider.GetAsync<BlogPost>(cacheKey);
-            if (cachedPost is not null)
+            try
             {
-                return cachedPost;
+                var cachedPost = await _cacheProvider.GetAsync<BlogPost>(cacheKey);
+                if (cachedPost is not null)
+                {
+                    return cachedPost;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ocorreu um erro ao tentar obter o post a slug: {Slug} do cache.", slug);
             }
 
             var post = await _blogPostRepository.GetBySlugAsync(slug);
             if (post is not null)
             {
-                await _cacheProvider.SetAsync(cacheKey, post, _cacheExpiration);
+                try
+                {
+                    await _cacheProvider.SetAsync(cacheKey, post, _cacheExpiration);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Ocorreu um erro ao tentar inserir o post com a slug: {Slug} no cache.", slug);
+                }
             }
 
             return post;
@@ -59,17 +93,32 @@ namespace Hermes.Core.Services.Cache
 
         public async Task<IEnumerable<BlogPost>> GetAllPostsAsync()
         {
-            var cachedPosts = await _cacheProvider.GetAsync<IEnumerable<BlogPost>>(CacheConstants.AllPostsKey);
-            if (cachedPosts is not null)
+            try
             {
-                return cachedPosts;
+                var cachedPosts = await _cacheProvider.GetAsync<IEnumerable<BlogPost>>(CacheConstants.AllPostsKey);
+                if (cachedPosts is not null)
+                {
+                    return cachedPosts;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ocorreu um erro ao tentar obter os posts do cache.");
             }
 
             var posts = await _blogPostRepository.GetAllAsync();
             if (posts is not null)
             {
                 var nonNullPosts = posts.Where(post => post != null).Cast<BlogPost>().ToList();
-                await _cacheProvider.SetAsync(CacheConstants.AllPostsKey, nonNullPosts, _cacheExpiration);
+                try
+                {
+                    await _cacheProvider.SetAsync(CacheConstants.AllPostsKey, nonNullPosts, _cacheExpiration);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Ocorreu um erro ao tentar inserir os posts no cache.");
+                }
+
                 return nonNullPosts;
             }
 
@@ -79,19 +128,33 @@ namespace Hermes.Core.Services.Cache
         public async Task<(IEnumerable<BlogPost> Posts, int TotalCount)> GetPagedPostsAsync(int pageNumber, int pageSize)
         {
             string cacheKey = string.Format(CacheConstants.PagedPostsKeyPattern, pageNumber, pageSize);
-           
-            var cachedResult = await _cacheProvider.GetAsync<CachedPagedResult>(cacheKey);
-            if (cachedResult is not null)
+
+            try
             {
-                return (cachedResult.Posts, cachedResult.TotalCount);
+                var cachedResult = await _cacheProvider.GetAsync<CachedPagedResult>(cacheKey);
+                if (cachedResult is not null)
+                {
+                    return (cachedResult.Posts, cachedResult.TotalCount);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ocorreu um erro ao tentar obter os posts paginados do cache.");
             }
 
             var result = await _blogPostRepository.GetPagedAsync(pageNumber, pageSize);
-            await _cacheProvider.SetAsync(cacheKey, new CachedPagedResult
+            try
             {
-                Posts = result.Posts,
-                TotalCount = result.TotalCount
-            }, _cacheExpiration);
+                await _cacheProvider.SetAsync(cacheKey, new CachedPagedResult
+                {
+                    Posts = result.Posts,
+                    TotalCount = result.TotalCount
+                }, _cacheExpiration);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ocorreu um erro ao tentar inserir os posts paginados no cache.");
+            }
 
             return result;
         }
