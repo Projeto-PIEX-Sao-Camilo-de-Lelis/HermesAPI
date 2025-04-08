@@ -1,6 +1,7 @@
 using Dapper;
 using DotNetEnv;
 using Hermes.Configs.Authentication;
+using Hermes.Configs.Cache;
 using Hermes.Configs.Cors;
 using Hermes.Configs.JsonSerializer;
 using Hermes.Configs.Postgresql;
@@ -25,7 +26,7 @@ namespace Hermes
                 Env.Load();
             }
 
-            string connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")!;
+            string connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING")!;
 
             // Auth
             builder.Services.AddAuthorization();
@@ -38,6 +39,9 @@ namespace Hermes
             builder.Services.AddCorsConfiguration();
             builder.Services.AddSwaggerConfiguration();
             builder.Services.AddHttpContextAccessor();
+
+            // Cache Configuration.
+            builder.Services.AddCacheConfiguration();
 
             // Database Connection.
             builder.Services.AddSingleton<IDbConnectionFactory>(provider =>

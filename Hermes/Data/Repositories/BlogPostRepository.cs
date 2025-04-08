@@ -253,7 +253,6 @@ namespace Hermes.Data.Repositories
                     WHERE slug = @Slug AND is_published = true";
 
                 var count = await connection.ExecuteScalarAsync<int>(sql, new { Slug = slug });
-                Console.WriteLine($"[DEBUG] Quantidade de slugs encontradas: {count}");
 
                 return count > 0;
             });
