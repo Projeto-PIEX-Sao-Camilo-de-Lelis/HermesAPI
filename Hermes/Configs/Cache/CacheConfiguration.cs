@@ -13,8 +13,11 @@ namespace Hermes.Configs.Cache
                 IsEnabled = bool.TryParse(Environment.GetEnvironmentVariable("CACHE_ENABLED"), out bool enabled) && enabled,
                 Endpoint = Environment.GetEnvironmentVariable("CACHE_ENDPOINT") ?? string.Empty,
                 Password = Environment.GetEnvironmentVariable("CACHE_PASSWORD") ?? string.Empty,
+                Expiration = int.TryParse(Environment.GetEnvironmentVariable("CACHE_EXPIRATION_MINUTES"), out int expiration) ? expiration : 15,
                 Provider = Environment.GetEnvironmentVariable("CACHE_PROVIDER") ?? "Valkey"
             };
+
+            services.AddSingleton(cacheSettings);
 
             if (cacheSettings.IsEnabled && !string.IsNullOrEmpty(cacheSettings.Endpoint))
             {
@@ -23,8 +26,7 @@ namespace Hermes.Configs.Cache
             }
             else
             {
-                services.AddSingleton<ICacheProvider>(provider =>
-                    new NullCacheProvider());
+                services.AddSingleton<ICacheProvider, NullCacheProvider>();
             }
 
             services.AddScoped<IBlogPostCacheService, BlogPostCacheService>();

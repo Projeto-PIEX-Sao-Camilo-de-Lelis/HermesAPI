@@ -1,4 +1,6 @@
-﻿using Hermes.Core.Interfaces.Cache;
+﻿using Hermes.Configs.Cache;
+using Hermes.Configs.Constants;
+using Hermes.Core.Interfaces.Cache;
 using Hermes.Core.Interfaces.Repository;
 using Hermes.Core.Models;
 
@@ -8,22 +10,18 @@ namespace Hermes.Core.Services.Cache
     {
         private readonly ICacheProvider _cacheProvider;
         private readonly IBlogPostRepository _blogPostRepository;
-        private readonly TimeSpan _cacheExpiration = TimeSpan.FromHours(24);
+        private readonly TimeSpan _cacheExpiration;
 
-        private const string PostByIdKeyPattern = "blogpost:id:{0}";
-        private const string PostBySlugKeyPattern = "blogpost:slug:{0}";
-        private const string AllPostsKey = "blogpost:all";
-        private const string PagedPostsKeyPattern = "blogpost:paged:{0}:{1}";
-
-        public BlogPostCacheService(ICacheProvider cacheProvider, IBlogPostRepository blogPostRepository)
+        public BlogPostCacheService(ICacheProvider cacheProvider, IBlogPostRepository blogPostRepository, CacheSettings cacheSettings)
         {
             _cacheProvider = cacheProvider;
             _blogPostRepository = blogPostRepository;
+            _cacheExpiration = TimeSpan.FromMinutes(cacheSettings.Expiration);
         }
 
         public async Task<BlogPost?> GetPostByIdAsync(Guid id)
         {
-            string cacheKey = string.Format(PostByIdKeyPattern, id);
+            string cacheKey = string.Format(CacheConstants.PostByIdKeyPattern, id);
 
             var cachedPost = await _cacheProvider.GetAsync<BlogPost>(cacheKey);
             if (cachedPost is not null)
@@ -42,7 +40,7 @@ namespace Hermes.Core.Services.Cache
 
         public async Task<BlogPost?> GetPostBySlugAsync(string slug)
         {
-            string cacheKey = string.Format(PostBySlugKeyPattern, slug);
+            string cacheKey = string.Format(CacheConstants.PostBySlugKeyPattern, slug);
 
             var cachedPost = await _cacheProvider.GetAsync<BlogPost>(cacheKey);
             if (cachedPost is not null)
@@ -61,7 +59,7 @@ namespace Hermes.Core.Services.Cache
 
         public async Task<IEnumerable<BlogPost>> GetAllPostsAsync()
         {
-            var cachedPosts = await _cacheProvider.GetAsync<IEnumerable<BlogPost>>(AllPostsKey);
+            var cachedPosts = await _cacheProvider.GetAsync<IEnumerable<BlogPost>>(CacheConstants.AllPostsKey);
             if (cachedPosts is not null)
             {
                 return cachedPosts;
@@ -71,7 +69,7 @@ namespace Hermes.Core.Services.Cache
             if (posts is not null)
             {
                 var nonNullPosts = posts.Where(post => post != null).Cast<BlogPost>().ToList();
-                await _cacheProvider.SetAsync(AllPostsKey, nonNullPosts, _cacheExpiration);
+                await _cacheProvider.SetAsync(CacheConstants.AllPostsKey, nonNullPosts, _cacheExpiration);
                 return nonNullPosts;
             }
 
@@ -80,7 +78,7 @@ namespace Hermes.Core.Services.Cache
 
         public async Task<(IEnumerable<BlogPost> Posts, int TotalCount)> GetPagedPostsAsync(int pageNumber, int pageSize)
         {
-            string cacheKey = string.Format(PagedPostsKeyPattern, pageNumber, pageSize);
+            string cacheKey = string.Format(CacheConstants.PagedPostsKeyPattern, pageNumber, pageSize);
            
             var cachedResult = await _cacheProvider.GetAsync<CachedPagedResult>(cacheKey);
             if (cachedResult is not null)
@@ -100,8 +98,8 @@ namespace Hermes.Core.Services.Cache
 
         public async Task CachePostAsync(BlogPost post)
         {
-            await _cacheProvider.SetAsync(string.Format(PostByIdKeyPattern, post.Id), post, _cacheExpiration);
-            await _cacheProvider.SetAsync(string.Format(PostBySlugKeyPattern, post.Slug), post, _cacheExpiration);
+            await _cacheProvider.SetAsync(string.Format(CacheConstants.PostByIdKeyPattern, post.Id), post, _cacheExpiration);
+            await _cacheProvider.SetAsync(string.Format(CacheConstants.PostBySlugKeyPattern, post.Slug), post, _cacheExpiration);
 
             await InvalidateAllPostsCacheAsync();
         }
@@ -111,8 +109,8 @@ namespace Hermes.Core.Services.Cache
             var post = await _blogPostRepository.GetByIdAsync(id);
             if (post is not null)
             {
-                await _cacheProvider.RemoveAsync(string.Format(PostByIdKeyPattern, id));
-                await _cacheProvider.RemoveAsync(string.Format(PostBySlugKeyPattern, post.Slug));
+                await _cacheProvider.RemoveAsync(string.Format(CacheConstants.PostByIdKeyPattern, id));
+                await _cacheProvider.RemoveAsync(string.Format(CacheConstants.PostBySlugKeyPattern, post.Slug));
             }
 
             await InvalidateAllPostsCacheAsync();
@@ -120,7 +118,7 @@ namespace Hermes.Core.Services.Cache
 
         public async Task InvalidateAllPostsCacheAsync()
         {
-            await _cacheProvider.RemoveAsync(AllPostsKey);
+            await _cacheProvider.RemoveAsync(CacheConstants.AllPostsKey);
             await _cacheProvider.ClearAsync("blogposts:paged:*");
         }
 
