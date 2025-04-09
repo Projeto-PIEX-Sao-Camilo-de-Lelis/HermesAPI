@@ -8,20 +8,21 @@ namespace Hermes.Core.Infrastructure.Cache
     {
         private readonly ConnectionMultiplexer? _valkey;
         private readonly IDatabase? _db;
-        private readonly bool _cacheEnabled;
+        private readonly bool _isCacheEnabled;
 
-        public ValkeyCacheProvider(bool cacheEnabled, string endpoints, string password)
+        public ValkeyCacheProvider(bool isCacheEnabled, string endpoints, int port, string username, string password)
         {
-            _cacheEnabled = cacheEnabled;
+            _isCacheEnabled = isCacheEnabled;
 
-            if (_cacheEnabled)
+            if (_isCacheEnabled)
             {
                 var options = new ConfigurationOptions
                 {
-                    EndPoints = { endpoints },
+                    EndPoints = { { endpoints, port } },
+                    User = username,
                     Password = password,
                     Ssl = true,
-                    AbortOnConnectFail = false
+                    AbortOnConnectFail = true,
                 };
 
                 _valkey = ConnectionMultiplexer.Connect(options);
@@ -31,7 +32,7 @@ namespace Hermes.Core.Infrastructure.Cache
 
         public async Task<T?> GetAsync<T>(string key) where T : class
         {
-            if (!_cacheEnabled || _db is null)
+            if (!_isCacheEnabled || _db is null)
             {
                 return null;
             }
@@ -47,7 +48,7 @@ namespace Hermes.Core.Infrastructure.Cache
 
         public async Task SetAsync<T>(string key, T value, TimeSpan? expiration = null) where T : class
         {
-            if (!_cacheEnabled || _db is null)
+            if (!_isCacheEnabled || _db is null)
             {
                 return;
             }
@@ -58,7 +59,7 @@ namespace Hermes.Core.Infrastructure.Cache
 
         public async Task RemoveAsync(string key)
         {
-            if (!_cacheEnabled || _db is null)
+            if (!_isCacheEnabled || _db is null)
             {
                 return;
             }
@@ -68,7 +69,7 @@ namespace Hermes.Core.Infrastructure.Cache
 
         public async Task<bool> ExistsAsync(string key)
         {
-            if (!_cacheEnabled || _db is null)
+            if (!_isCacheEnabled || _db is null)
             {
                 return false;
             }
@@ -78,7 +79,7 @@ namespace Hermes.Core.Infrastructure.Cache
 
         public async Task ClearAsync(string pattern)
         {
-            if (!_cacheEnabled || _valkey is null || _db is null)
+            if (!_isCacheEnabled || _valkey is null || _db is null)
             {
                 return;
             }

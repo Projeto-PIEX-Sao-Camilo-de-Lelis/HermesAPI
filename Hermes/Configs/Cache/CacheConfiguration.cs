@@ -13,6 +13,8 @@ namespace Hermes.Configs.Cache
                 IsEnabled = bool.TryParse(Environment.GetEnvironmentVariable("CACHE_ENABLED"), out bool enabled) && enabled,
                 Endpoint = Environment.GetEnvironmentVariable("CACHE_ENDPOINT") ?? string.Empty,
                 Password = Environment.GetEnvironmentVariable("CACHE_PASSWORD") ?? string.Empty,
+                Username = Environment.GetEnvironmentVariable("CACHE_USERNAME") ?? "default",
+                Port = int.TryParse(Environment.GetEnvironmentVariable("CACHE_PORT"), out int port) ? port : 6379,
                 Expiration = int.TryParse(Environment.GetEnvironmentVariable("CACHE_EXPIRATION_MINUTES"), out int expiration) ? expiration : 15,
                 Provider = Environment.GetEnvironmentVariable("CACHE_PROVIDER") ?? "Valkey"
             };
@@ -22,7 +24,13 @@ namespace Hermes.Configs.Cache
             if (cacheSettings.IsEnabled && !string.IsNullOrEmpty(cacheSettings.Endpoint))
             {
                 services.AddSingleton<ICacheProvider>(provider =>
-                    new ValkeyCacheProvider(cacheSettings.IsEnabled, cacheSettings.Endpoint, cacheSettings.Password));
+                    new ValkeyCacheProvider(
+                        cacheSettings.IsEnabled,
+                        cacheSettings.Endpoint,
+                        cacheSettings.Port,
+                        cacheSettings.Username,
+                        cacheSettings.Password
+                    ));
             }
             else
             {
