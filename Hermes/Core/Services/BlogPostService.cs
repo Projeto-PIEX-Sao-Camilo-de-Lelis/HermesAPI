@@ -10,11 +10,16 @@ namespace Hermes.Core.Services
     {
         private readonly IBlogPostRepository _postRepository;
         private readonly IBlogPostCacheService _cacheService;
+        private readonly ILogger<BlogPostService> _logger;
 
-        public BlogPostService(IBlogPostRepository postRepository, IBlogPostCacheService cacheService)
+        public BlogPostService(
+            IBlogPostRepository postRepository, 
+            IBlogPostCacheService cacheService,
+            ILogger<BlogPostService> logger)
         {
             _postRepository = postRepository;
             _cacheService = cacheService;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<BlogPost>> GetAllPostsAsync()
@@ -61,10 +66,7 @@ namespace Hermes.Core.Services
                 throw new InvalidOperationException("Ocorreu um erro ao tentar criar o post.");
             }
 
-            if (createdPost is not null)
-            {
-                await _cacheService.AppendPostToCacheAsync(createdPost);
-            }
+            await _cacheService.AppendPostToCacheAsync(createdPost);
 
             return createdPost;
         }
@@ -93,26 +95,41 @@ namespace Hermes.Core.Services
                 throw new InvalidOperationException("Ocorreu um erro ao tentar atualizar o post.");
             }
 
-            await _cacheService.InvalidatePostCacheAsync(id);
+            await _cacheService.UpdatePostInCacheAsync(result);
 
             return result;
         }
 
         public async Task DeletePostAsync(Guid id)
         {
+            var postToDelete = await _postRepository.GetByIdAsync(id);
+            string? slug = postToDelete?.Slug;
+
             await _postRepository.DeleteAsync(id);
-            await _cacheService.InvalidatePostCacheAsync(id);
+
+            if (postToDelete is not null)
+            {
+                await _cacheService.DeletePostFromCacheAsync(id, slug);
+            }
         }
 
         public async Task SynchronizeBlogPostsCacheAsync()
         {
-            await _cacheService.InvalidateAllPostsCacheAsync();
-            var allPosts = await _postRepository.GetAllAsync();
+            _logger.LogInformation("Iniciando sincronização completa do cache de posts");
 
-            foreach (var post in allPosts)
+            await _cacheService.InvalidateAllPostsCacheAsync();
+
+            var allPosts = await _postRepository.GetAllAsync();
+            var nonNullPosts = allPosts.Where(post => post != null).ToList();
+
+            _logger.LogInformation("Atualizando cache com {Count} posts do banco de dados", nonNullPosts.Count);
+
+            foreach (var post in nonNullPosts)
             {
                 await _cacheService.CachePostAsync(post);
             }
+
+            _logger.LogInformation("Sincronização de cache concluída");
         }
 
         private async Task<bool> CheckSlugExistsAsync(BlogPost post)
