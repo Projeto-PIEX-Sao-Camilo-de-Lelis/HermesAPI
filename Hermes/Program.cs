@@ -67,7 +67,7 @@ namespace Hermes
 
             // app.UseHttpsRedirection();
 
-            app.UseCors("AllowAllOrigins");
+            app.UseCors("AllowSpecificOrigins");
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
