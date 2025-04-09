@@ -10,7 +10,14 @@ namespace Hermes.Core.Infrastructure.Cache
         private readonly IDatabase? _db;
         private readonly bool _isCacheEnabled;
 
-        public ValkeyCacheProvider(bool isCacheEnabled, string endpoints, int port, string username, string password)
+        public ValkeyCacheProvider(
+            bool isCacheEnabled,
+            string endpoint,
+            int port,
+            bool isSslEnabled,
+            bool isAbortOnConnectFailEnabled,
+            string username,
+            string password)
         {
             _isCacheEnabled = isCacheEnabled;
 
@@ -18,11 +25,11 @@ namespace Hermes.Core.Infrastructure.Cache
             {
                 var options = new ConfigurationOptions
                 {
-                    EndPoints = { { endpoints, port } },
+                    EndPoints = { { endpoint, port } },
                     User = username,
                     Password = password,
-                    Ssl = true,
-                    AbortOnConnectFail = true,
+                    Ssl = isSslEnabled,
+                    AbortOnConnectFail = isAbortOnConnectFailEnabled,
                 };
 
                 _valkey = ConnectionMultiplexer.Connect(options);
