@@ -53,7 +53,6 @@ namespace Hermes.Data.Repositories
                       p.created_at,
                       p.updated_at,
                       p.is_published,
-                      u.id AS author_id,
                       u.name AS author
                 FROM posts AS p
                 JOIN users AS u
@@ -126,8 +125,7 @@ namespace Hermes.Data.Repositories
                         p.created_at,
                         p.updated_at,
                         p.is_published,
-                        u.id AS author_id,
-                        u.name
+                        u.name AS author
                     FROM posts AS p
                     JOIN users AS u 
                         ON p.author_id = u.id
@@ -154,8 +152,7 @@ namespace Hermes.Data.Repositories
                         p.created_at,
                         p.updated_at,
                         p.is_published,
-                        u.id AS author_id,
-                        u.name
+                        u.name AS author
                     FROM posts AS p
                     JOIN users AS u 
                         ON p.author_id = u.id
