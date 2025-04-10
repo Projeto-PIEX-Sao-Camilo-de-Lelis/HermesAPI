@@ -35,7 +35,7 @@ namespace Hermes.Configs.Postgresql
 
             try
             {
-                connection.OpenAsync();
+                connection.Open();
                 DefaultTypeMap.MatchNamesWithUnderscores = true;
             }
             catch (NpgsqlException ex)
