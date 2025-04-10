@@ -1,4 +1,5 @@
-﻿using Hermes.Core.Interfaces.Cache;
+﻿using Hermes.Core.Dtos.Responses;
+using Hermes.Core.Interfaces.Cache;
 
 namespace Hermes.Core.Infrastructure.Cache
 {
@@ -9,5 +10,6 @@ namespace Hermes.Core.Infrastructure.Cache
         public Task RemoveAsync(string key) => Task.CompletedTask;
         public Task<bool> ExistsAsync(string key) => Task.FromResult(false);
         public Task ClearAsync(string pattern) => Task.CompletedTask;
+        public Task<CachePingResultResponseDto> PingAsync() => Task.FromResult(new CachePingResultResponseDto { IsAlive = false, Latency = TimeSpan.Zero });
     }
 }

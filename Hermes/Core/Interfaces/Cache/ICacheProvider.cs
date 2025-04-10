@@ -1,4 +1,6 @@
-﻿namespace Hermes.Core.Interfaces.Cache
+﻿using Hermes.Core.Dtos.Responses;
+
+namespace Hermes.Core.Interfaces.Cache
 {
     public interface ICacheProvider
     {
@@ -7,5 +9,6 @@
         Task RemoveAsync(string key);
         Task<bool> ExistsAsync(string key);
         Task ClearAsync(string pattern);
+        Task<CachePingResultResponseDto> PingAsync();
     }
 }

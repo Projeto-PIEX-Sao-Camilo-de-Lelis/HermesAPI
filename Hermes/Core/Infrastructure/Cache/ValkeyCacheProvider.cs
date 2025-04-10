@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Hermes.Core.Dtos.Responses;
 using Hermes.Core.Interfaces.Cache;
 using StackExchange.Redis;
 
@@ -23,17 +24,25 @@ namespace Hermes.Core.Infrastructure.Cache
 
             if (_isCacheEnabled)
             {
-                var options = new ConfigurationOptions
+                try
                 {
-                    EndPoints = { { endpoint, port } },
-                    User = username,
-                    Password = password,
-                    Ssl = isSslEnabled,
-                    AbortOnConnectFail = isAbortOnConnectFailEnabled,
-                };
+                    var options = new ConfigurationOptions
+                    {
+                        EndPoints = { { endpoint, port } },
+                        User = username,
+                        Password = password,
+                        Ssl = isSslEnabled,
+                        AbortOnConnectFail = isAbortOnConnectFailEnabled,
+                    };
 
-                _valkey = ConnectionMultiplexer.Connect(options);
-                _db = _valkey.GetDatabase();
+                    _valkey = ConnectionMultiplexer.Connect(options);
+                    _db = _valkey.GetDatabase();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erro ao conectar ao Redis: {ex.Message}");
+                    _isCacheEnabled = false;
+                }
             }
         }
 
@@ -44,13 +53,21 @@ namespace Hermes.Core.Infrastructure.Cache
                 return null;
             }
 
-            var value = await _db.StringGetAsync(key);
-            if (value.IsNullOrEmpty)
+            try
             {
+                var value = await _db.StringGetAsync(key);
+                if (value.IsNullOrEmpty)
+                {
+                    return null;
+                }
+
+                return JsonSerializer.Deserialize<T>(value!);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao obter chave do cache: {ex.Message}");
                 return null;
             }
-
-            return JsonSerializer.Deserialize<T>(value!);
         }
 
         public async Task SetAsync<T>(string key, T value, TimeSpan? expiration = null) where T : class
@@ -60,8 +77,15 @@ namespace Hermes.Core.Infrastructure.Cache
                 return;
             }
 
-            var serializedValue = JsonSerializer.Serialize(value);
-            await _db.StringSetAsync(key, serializedValue, expiration);
+            try
+            {
+                var serializedValue = JsonSerializer.Serialize(value);
+                await _db.StringSetAsync(key, serializedValue, expiration);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao definir chave no cache: {ex.Message}");
+            }
         }
 
         public async Task RemoveAsync(string key)
@@ -71,7 +95,14 @@ namespace Hermes.Core.Infrastructure.Cache
                 return;
             }
 
-            await _db.KeyDeleteAsync(key);
+            try
+            {
+                await _db.KeyDeleteAsync(key);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao remover chave do cache: {ex.Message}");
+            }
         }
 
         public async Task<bool> ExistsAsync(string key)
@@ -81,7 +112,15 @@ namespace Hermes.Core.Infrastructure.Cache
                 return false;
             }
 
-            return await _db.KeyExistsAsync(key);
+            try
+            {
+                return await _db.KeyExistsAsync(key);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao verificar existência de chave no cache: {ex.Message}");
+                return false;
+            }
         }
 
         public async Task ClearAsync(string pattern)
@@ -101,6 +140,38 @@ namespace Hermes.Core.Infrastructure.Cache
                 {
                     await _db.KeyDeleteAsync(key);
                 }
+            }
+        }
+
+        public async Task<CachePingResultResponseDto> PingAsync()
+        {
+            if (!_isCacheEnabled || _valkey is null)
+            {
+                return new CachePingResultResponseDto
+                {
+                    IsAlive = false,
+                    Latency = TimeSpan.Zero
+                };
+            }
+
+            try
+            {
+                var db = _valkey.GetDatabase();
+                var latency = await db.PingAsync();
+                return new CachePingResultResponseDto
+                {
+                    IsAlive = true,
+                    Latency = latency
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao realizar PING no cache: {ex.Message}");
+                return new CachePingResultResponseDto
+                {
+                    IsAlive = false,
+                    Latency = TimeSpan.Zero
+                };
             }
         }
     }
