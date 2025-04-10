@@ -102,8 +102,7 @@ namespace Hermes.Data.Repositories
                     FROM posts AS p 
                     JOIN users AS u 
                         ON p.author_id = u.id 
-                    WHERE p.id = @Id AND is_published = true 
-                    ORDER BY p.created_at DESC";
+                    WHERE p.id = @Id AND is_published = true";
 
                 return await connection.QueryFirstOrDefaultAsync<BlogPost>(sql, new { Id = id });
             });
@@ -129,8 +128,7 @@ namespace Hermes.Data.Repositories
                     FROM posts AS p
                     JOIN users AS u 
                         ON p.author_id = u.id
-                    WHERE p.slug = @Slug AND is_published = true
-                    ORDER BY p.created_at DESC";
+                    WHERE p.slug = @Slug AND is_published = true";
 
                 return await connection.QueryFirstOrDefaultAsync<BlogPost>(sql, new { Slug = slug });
             });
