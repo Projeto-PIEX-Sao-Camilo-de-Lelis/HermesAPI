@@ -42,6 +42,7 @@ namespace Hermes.Controllers
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(BlogPostResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAnonymous]
         public async Task<ActionResult<BlogPostResponseDto>> GetById(Guid id)
         {
             var existingPost = await _blogPostService.GetPostByIdAsync(id);
@@ -57,6 +58,7 @@ namespace Hermes.Controllers
         [HttpGet("slug/{slug}")]
         [ProducesResponseType(typeof(BlogPostResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAnonymous]
         public async Task<ActionResult<BlogPostResponseDto>> GetBySlug(string slug)
         {
             var existingPost = await _blogPostService.GetPostBySlugAsync(slug);
