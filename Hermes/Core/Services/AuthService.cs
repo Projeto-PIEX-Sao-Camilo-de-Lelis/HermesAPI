@@ -41,7 +41,7 @@ namespace Hermes.Core.Services
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Path = "/",
                     Expires = DateTime.UtcNow.AddDays(-1)
                 };
