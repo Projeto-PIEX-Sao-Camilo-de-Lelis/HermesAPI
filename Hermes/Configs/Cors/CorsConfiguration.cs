@@ -10,8 +10,8 @@
                 {
                     builder.WithOrigins(
                             "http://localhost:3000",
-                            "http://localhost:5173/",
-                            "https://casacamilodelelis.org/"
+                            "http://localhost:5173",
+                            "https://casacamilodelelis.org"
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()
