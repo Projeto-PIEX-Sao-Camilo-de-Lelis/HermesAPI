@@ -38,7 +38,7 @@ namespace Hermes.Controllers
             return Ok(new
             {
                 Sucess = true,
-                Message = "Usuário autenticado com sucesso!",
+                Message = "Usuário autenticado com sucesso.",
             });
         }
     }

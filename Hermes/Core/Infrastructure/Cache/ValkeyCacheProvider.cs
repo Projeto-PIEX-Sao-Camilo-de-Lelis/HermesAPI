@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Hermes.Configs.Cache;
 using Hermes.Core.Dtos.Responses;
 using Hermes.Core.Interfaces.Cache;
 using StackExchange.Redis;
@@ -11,16 +12,9 @@ namespace Hermes.Core.Infrastructure.Cache
         private readonly IDatabase? _db;
         private readonly bool _isCacheEnabled;
 
-        public ValkeyCacheProvider(
-            bool isCacheEnabled,
-            string endpoint,
-            int port,
-            bool isSslEnabled,
-            bool isAbortOnConnectFailEnabled,
-            string username,
-            string password)
+        public ValkeyCacheProvider(CacheSettings cacheSettings)
         {
-            _isCacheEnabled = isCacheEnabled;
+            _isCacheEnabled = cacheSettings.IsEnabled;
 
             if (_isCacheEnabled)
             {
@@ -28,11 +22,11 @@ namespace Hermes.Core.Infrastructure.Cache
                 {
                     var options = new ConfigurationOptions
                     {
-                        EndPoints = { { endpoint, port } },
-                        User = username,
-                        Password = password,
-                        Ssl = isSslEnabled,
-                        AbortOnConnectFail = isAbortOnConnectFailEnabled,
+                        EndPoints = { { cacheSettings.Endpoint, cacheSettings.Port } },
+                        User = cacheSettings.Username,
+                        Password = cacheSettings.Password,
+                        Ssl = cacheSettings.IsSslEnabled,
+                        AbortOnConnectFail = cacheSettings.IsAbortOnConnectFailEnabled,
                     };
 
                     _valkey = ConnectionMultiplexer.Connect(options);
@@ -40,7 +34,7 @@ namespace Hermes.Core.Infrastructure.Cache
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Erro ao conectar ao Redis: {ex.Message}");
+                    Console.WriteLine($"Ocorreu um erro ao conectar ao provedor de cache: {ex.Message}");
                     _isCacheEnabled = false;
                 }
             }

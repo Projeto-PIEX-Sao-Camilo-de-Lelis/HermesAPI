@@ -26,15 +26,7 @@ namespace Hermes.Configs.Cache
             if (cacheSettings.IsEnabled && !string.IsNullOrEmpty(cacheSettings.Endpoint))
             {
                 services.AddSingleton<ICacheProvider>(provider =>
-                    new ValkeyCacheProvider(
-                        cacheSettings.IsEnabled,
-                        cacheSettings.Endpoint,
-                        cacheSettings.Port,
-                        cacheSettings.IsSslEnabled,
-                        cacheSettings.IsAbortOnConnectFailEnabled,
-                        cacheSettings.Username,
-                        cacheSettings.Password
-                    ));
+                    new ValkeyCacheProvider(cacheSettings));
             }
             else
             {
