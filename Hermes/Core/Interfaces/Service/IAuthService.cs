@@ -5,7 +5,6 @@ namespace Hermes.Core.Interfaces.Service
 {
     public interface IAuthService
     {
-        Task<AuthResponseDto?> AuthenticateAsync(UserLoginRequestDto userLoginRequest);
-        void Logout();
+        Task<string?> AuthenticateAsync(UserLoginRequestDto userLoginRequest);
     }
 }

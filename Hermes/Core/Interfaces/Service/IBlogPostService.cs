@@ -12,5 +12,6 @@ namespace Hermes.Core.Interfaces.Service
         Task<BlogPost> CreatePostAsync(BlogPost post, int contentPreviewMaxLength);
         Task<BlogPost> UpdatePostAsync(Guid id,BlogPost post);
         Task DeletePostAsync(Guid id);
+        Task SynchronizeBlogPostsCacheAsync();
     }
 }

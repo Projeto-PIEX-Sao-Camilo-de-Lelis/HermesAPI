@@ -2,7 +2,6 @@
 using Hermes.Core.Dtos.Responses;
 using Hermes.Core.Extensions;
 using Hermes.Core.Interfaces.Service;
-using Hermes.Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -58,7 +57,6 @@ namespace Hermes.Controllers
 
             var userToCreate = UserMapper.ToEntity(userCreateRequest);
             var createdUser = await _userService.CreateUserAsync(userToCreate);
-
             var userResponse = UserMapper.ToResponseDto(createdUser);
 
             return CreatedAtAction(nameof(GetById), new { userResponse.Id }, userResponse);
@@ -68,6 +66,7 @@ namespace Hermes.Controllers
         [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<UserResponseDto>> Put(string email, [FromBody] UserUpdateRequestDto userUpdateRequest )
         {
             if (email != userUpdateRequest.Email)
@@ -95,6 +94,7 @@ namespace Hermes.Controllers
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(string email)
         {
             var existingUser = await _userService.GetUserByEmailAsync(email);

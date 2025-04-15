@@ -7,6 +7,6 @@ namespace Hermes.Core.Dtos.Requests
         public required string Name { get; init; }
         public required string Email { get; init; }
         public required string Password { get; init; }
-        public Role Role { get; init; }
+        public required Role Role { get; init; }
     }
 }

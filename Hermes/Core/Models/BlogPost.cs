@@ -18,6 +18,7 @@ namespace Hermes.Core.Models
 
         [Column("author_id")]
         public Guid AuthorId { get; set; } = Guid.NewGuid();
+        [NotMapped]
         public string Author { get; set; } = string.Empty;
 
         [Column("published_at")]

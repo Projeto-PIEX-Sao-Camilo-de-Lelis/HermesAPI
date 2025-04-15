@@ -53,7 +53,6 @@ namespace Hermes.Data.Repositories
                       p.created_at,
                       p.updated_at,
                       p.is_published,
-                      u.id AS author_id,
                       u.name AS author
                 FROM posts AS p
                 JOIN users AS u
@@ -103,8 +102,7 @@ namespace Hermes.Data.Repositories
                     FROM posts AS p 
                     JOIN users AS u 
                         ON p.author_id = u.id 
-                    WHERE p.id = @Id AND is_published = true 
-                    ORDER BY p.created_at DESC";
+                    WHERE p.id = @Id AND is_published = true";
 
                 return await connection.QueryFirstOrDefaultAsync<BlogPost>(sql, new { Id = id });
             });
@@ -126,13 +124,11 @@ namespace Hermes.Data.Repositories
                         p.created_at,
                         p.updated_at,
                         p.is_published,
-                        u.id AS author_id,
-                        u.name
+                        u.name AS author
                     FROM posts AS p
                     JOIN users AS u 
                         ON p.author_id = u.id
-                    WHERE p.slug = @Slug AND is_published = true
-                    ORDER BY p.created_at DESC";
+                    WHERE p.slug = @Slug AND is_published = true";
 
                 return await connection.QueryFirstOrDefaultAsync<BlogPost>(sql, new { Slug = slug });
             });
@@ -154,8 +150,7 @@ namespace Hermes.Data.Repositories
                         p.created_at,
                         p.updated_at,
                         p.is_published,
-                        u.id AS author_id,
-                        u.name
+                        u.name AS author
                     FROM posts AS p
                     JOIN users AS u 
                         ON p.author_id = u.id
@@ -253,7 +248,6 @@ namespace Hermes.Data.Repositories
                     WHERE slug = @Slug AND is_published = true";
 
                 var count = await connection.ExecuteScalarAsync<int>(sql, new { Slug = slug });
-                Console.WriteLine($"[DEBUG] Quantidade de slugs encontradas: {count}");
 
                 return count > 0;
             });
