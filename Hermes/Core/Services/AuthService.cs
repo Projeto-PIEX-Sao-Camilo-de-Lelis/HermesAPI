@@ -1,9 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Hermes.Configs.Constants;
 using Hermes.Core.Dtos.Requests;
-using Hermes.Core.Dtos.Responses;
 using Hermes.Core.Interfaces.Service;
 using Hermes.Core.Models;
 using Microsoft.IdentityModel.Tokens;
@@ -13,15 +11,13 @@ namespace Hermes.Core.Services
     public class AuthService : IAuthService
     {
         private readonly IUserService _userService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthService(IUserService userService, IHttpContextAccessor httpContextAccessor)
+        public AuthService(IUserService userService)
         {
             _userService = userService;
-            _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<AuthResponseDto?> AuthenticateAsync(UserLoginRequestDto userLoginRequest)
+        public async Task<string?> AuthenticateAsync(UserLoginRequestDto userLoginRequest)
         {
             var user = await _userService.GetUserByEmailAsync(userLoginRequest.Email);
 
@@ -33,45 +29,12 @@ namespace Hermes.Core.Services
             return AuthorizeUser(user);
         }
 
-        public void Logout()
+        private static string AuthorizeUser(User user)
         {
-            if (_httpContextAccessor.HttpContext != null)
-            {
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.None,
-                    Path = "/",
-                    Expires = DateTime.UtcNow.AddDays(-1)
-                };
-
-                _httpContextAccessor.HttpContext.Response.Cookies.Append(AuthConstants.AuthTokenCookieName, "", cookieOptions);
-            }
+            return GenerateJwtToken(user);
         }
 
-        private AuthResponseDto? AuthorizeUser(User user)
-        {
-            var token = GenerateJwtToken(user);
-
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Path = "/"
-            };
-
-            _httpContextAccessor.HttpContext?.Response.Cookies.Append(AuthConstants.AuthTokenCookieName, token, cookieOptions);
-
-            return new AuthResponseDto
-            {
-                Sucess = true,
-                Message = "Autenticado com sucesso!",
-            };
-        }
-
-        private string GenerateJwtToken(User user)
+        private static string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(GetTokenDescriptor(user));
@@ -100,7 +63,8 @@ namespace Hermes.Core.Services
             return new SecurityTokenDescriptor
             {
                 Subject = GenerateClaims(user),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddMinutes(
+                    int.TryParse(Environment.GetEnvironmentVariable("JWT_EXPIRATION_MINUTES"), out int expiration) ? expiration : 30),
                 Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
                 Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
                 SigningCredentials = GetCredentials(),

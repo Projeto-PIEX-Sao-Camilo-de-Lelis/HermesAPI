@@ -1,4 +1,5 @@
 ﻿using Hermes.Core.Dtos.Requests;
+using Hermes.Core.Dtos.Responses;
 using Hermes.Core.Interfaces.Service;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +29,7 @@ namespace Hermes.Controllers
             var authResult = await _authService.AuthenticateAsync(userLoginRequest);
             if (authResult is null)
             {
-                return Unauthorized(new 
+                return Unauthorized(new
                 {
                     Sucess = false,
                     Message = "E-mail ou senha incorretos. Por favor, verifique suas credenciais e tente novamente.",
@@ -37,8 +38,7 @@ namespace Hermes.Controllers
 
             return Ok(new
             {
-                Sucess = true,
-                Message = "Usuário autenticado com sucesso.",
+                Token = authResult,
             });
         }
     }

@@ -22,14 +22,14 @@ namespace Hermes.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(PagedResponseDto<BlogPostResponseDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PagedResponseDto<BlogPostSimplifiedResponseDto>), StatusCodes.Status200OK)]
         [AllowAnonymous]
         public async Task<ActionResult<PagedResponseDto<BlogPostResponseDto>>> GetPaged([FromQuery] PaginationRequestDto pagination)
         {
             var (posts, totalCount) = await _blogPostService.GetPagedPostsAsync(pagination.PageNumber, pagination.PageSize);
-            var postsDto = BlogPostMapper.ToResponseDto(posts);
+            var postsDto = BlogPostMapper.ToSimplifiedResponseDto(posts);
 
-            var pagedResponse = new PagedResponseDto<BlogPostResponseDto>(
+            var pagedResponse = new PagedResponseDto<BlogPostSimplifiedResponseDto>(
                 postsDto,
                 pagination.PageNumber,
                 pagination.PageSize,
