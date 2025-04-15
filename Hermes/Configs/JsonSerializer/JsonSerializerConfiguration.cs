@@ -2,7 +2,7 @@
 {
     public static class JsonSerializerConfiguration
     {
-        public static IServiceCollection ConfigureJsonSerializer(this IServiceCollection services)
+        public static IServiceCollection AddJsonSerializerConfiguration(this IServiceCollection services)
         {
             services.AddControllers().AddJsonOptions(options =>
             {
