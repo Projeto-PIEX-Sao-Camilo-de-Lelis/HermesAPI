@@ -1,9 +1,10 @@
-﻿using Hermes.Core.Interfaces.Service;
-using Microsoft.AspNetCore.Mvc;
+﻿using Hermes.Core.Dtos.Requests;
 using Hermes.Core.Dtos.Responses;
-using Hermes.Core.Dtos.Requests;
-using Microsoft.AspNetCore.Authorization;
 using Hermes.Core.Extensions;
+using Hermes.Core.Interfaces.Service;
+using Hermes.Core.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Hermes.Controllers
 {
@@ -74,7 +75,7 @@ namespace Hermes.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(BlogPostResponseDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        
+
         public async Task<ActionResult<BlogPostResponseDto>> Post(
             [FromBody] BlogPostCreateRequestDto postCreateRequest,
             [FromQuery] int contentPreviewMaxLength = 150)
@@ -97,6 +98,52 @@ namespace Hermes.Controllers
             var postResponse = BlogPostMapper.ToResponseDto(createPost);
 
             return CreatedAtAction(nameof(GetById), new { id = postResponse.Id }, postResponse);
+        }
+
+        [HttpPut("{id:guid}")]
+        [ProducesResponseType(typeof(BlogPostResponseDto), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<BlogPost>> Put(Guid id, [FromBody] BlogPostUpdateRequestDto postUpdateRequest)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userIdClaim = _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(c => c.Type == "userId");
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out Guid authorId))
+            {
+                return BadRequest(new { message = "Id do usuário não encontrado ou inválido!" });
+            }
+
+            var existingPost = await _blogPostService.GetPostByIdAsync(id);
+            if (existingPost is null)
+            {
+                return NotFound(new { message = "Nenhum post foi encontrado com o Id informado." });
+            }
+
+            BlogPostMapper.UpdateEntity(existingPost, postUpdateRequest);
+            existingPost.AuthorId = authorId;
+
+            await _blogPostService.UpdatePostAsync(id, existingPost);
+            return NoContent();
+        }
+
+        [HttpDelete]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> Delete(Guid id)
+        {
+            var existingPost = await _blogPostService.GetPostByIdAsync(id);
+            if (existingPost is null)
+            {
+                return NotFound(new { message = "Nenhum post foi encontrado com o Id informado." });
+            }
+
+            await _blogPostService.DeletePostAsync(id);
+
+            return NoContent();
         }
     }
 }

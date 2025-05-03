@@ -2,6 +2,7 @@ using Dapper;
 using DotNetEnv;
 using Hermes.Configs.Authentication;
 using Hermes.Configs.Cache;
+using Hermes.Configs.Cloudinary;
 using Hermes.Configs.Cors;
 using Hermes.Configs.JsonSerializer;
 using Hermes.Configs.Postgresql;
@@ -34,13 +35,12 @@ namespace Hermes
             // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.ConfigureJsonSerializer();
-            builder.Services.ConfigureJwtAuthentication();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddJsonSerializerConfiguration();
+            builder.Services.AddJwtConfiguration();
             builder.Services.AddCorsConfiguration();
             builder.Services.AddSwaggerConfiguration();
-            builder.Services.AddHttpContextAccessor();
-
-            // Cache Configuration.
+            builder.Services.AddCloudinaryConfiguration();
             builder.Services.AddCacheConfiguration();
 
             // Database Connection.

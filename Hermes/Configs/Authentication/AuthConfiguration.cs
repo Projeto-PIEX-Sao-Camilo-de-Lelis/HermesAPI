@@ -8,7 +8,7 @@ namespace Hermes.Configs.Authentication
 {
     public static class AuthConfiguration
     {
-        public static IServiceCollection ConfigureJwtAuthentication(this IServiceCollection services)
+        public static IServiceCollection AddJwtConfiguration(this IServiceCollection services)
         {
             services.AddAuthentication(options =>
             {
