@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Dapper;
+using Hermes.Helpers;
 
 namespace Hermes.Data.TypeHandlers
 {
@@ -9,7 +10,10 @@ namespace Hermes.Data.TypeHandlers
         {
             return value switch
             {
-                DateTime dateTime => DateOnly.FromDateTime(dateTime),
+                DateTime dateTime => DateOnly.FromDateTime(
+            dateTime.Kind == DateTimeKind.Utc
+                ? dateTime.ConvertToBrazilDateTime()
+                : dateTime),
                 string dateString => DateOnly.Parse(dateString),
                 _ => throw new ArgumentException($"Não foi possível converter {value} para DateOnly.")
             };
