@@ -58,7 +58,7 @@ namespace Hermes.Core.Services
             bool slugExists = await CheckSlugExistsAsync(post);
             post.Slug = ShortHandSlugGenerator.GenerateUniqueSlug(post.Title, slugExists);
             post.ContentPreview = ContentPreviewGenerator.GeneratePreview(post.Content, contentPreviewMaxLength);
-            post.CreatedAt = DateTime.UtcNow;
+            post.CreatedAt = DateTimeHelper.GetCurrentBrazilDateTime();
 
             var createdPost = await _postRepository.CreateAsync(post);
             if (createdPost is null)
@@ -87,7 +87,7 @@ namespace Hermes.Core.Services
 
             updatedPost.Slug = ShortHandSlugGenerator.GenerateSlug(updatedPost.Title);
             updatedPost.ContentPreview = ContentPreviewGenerator.GeneratePreview(updatedPost.Content);
-            updatedPost.UpdatedAt = DateTime.UtcNow;
+            updatedPost.UpdatedAt = DateTimeHelper.GetCurrentBrazilDateTime();
 
             var result = await _postRepository.UpdateAsync(id, updatedPost);
             if (result is null)
