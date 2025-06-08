@@ -67,4 +67,22 @@ public class VisitorRepository : BaseRepository, IVisitorRepository
             return id;
         });
     }
+    
+    public async Task<bool> HasVisitorBeenRecordedInPeriodAsync(string ipAddress, DateTime startDate, DateTime endDate)
+    {
+        return await ExecuteWithConnectionAsync(async connection =>
+        {
+            const string sql = @"
+            SELECT COUNT(*) 
+            FROM visitors 
+            WHERE ip_address = @IpAddress 
+            AND visit_date >= @StartDate 
+            AND visit_date < @EndDate";
+
+            var parameters = new { IpAddress = ipAddress, StartDate = startDate, EndDate = endDate };
+            var count = await connection.QuerySingleAsync<int>(sql, parameters);
+        
+            return count > 0;
+        });
+    }
 }
