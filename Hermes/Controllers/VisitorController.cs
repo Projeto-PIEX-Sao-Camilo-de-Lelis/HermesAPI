@@ -11,13 +11,13 @@ public class VisitorController : ControllerBase
 {
     private readonly IVisitorService _visitorService;
     private readonly ILogger<VisitorController> _logger;
-    
+
     public VisitorController(IVisitorService visitorService, ILogger<VisitorController> logger)
     {
         _visitorService = visitorService;
         _logger = logger;
     }
-    
+
     [HttpPost("record")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -32,7 +32,7 @@ public class VisitorController : ControllerBase
         try
         {
             string ipAddress = GetClientIpAddress();
-            
+
             await _visitorService.RecordVisitAsync(ipAddress, request.PageUrl);
             return Ok();
         }
@@ -42,7 +42,7 @@ public class VisitorController : ControllerBase
             return StatusCode(500, new { message = "Erro ao registrar visita" });
         }
     }
-    
+
     [HttpGet("count")]
     [Authorize]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
@@ -60,7 +60,7 @@ public class VisitorController : ControllerBase
         var visitsByCountry = await _visitorService.GetVisitorsByCountryAsync();
         return Ok(visitsByCountry);
     }
-    
+
     [HttpGet("by-date")]
     [Authorize]
     [ProducesResponseType(typeof(Dictionary<string, int>), StatusCodes.Status200OK)]
@@ -68,31 +68,33 @@ public class VisitorController : ControllerBase
         [FromQuery] DateTime startDate,
         [FromQuery] DateTime endDate)
     {
-        if (startDate == null || endDate == null)
+        if (startDate == default || endDate == default)
         {
-            startDate = DateTime.Now;
+            startDate = DateTime.UtcNow.Date;
             endDate = startDate.AddDays(1);
         }
-        
+
+        endDate = endDate.Date.AddDays(1).AddTicks(-1);
+
         if (startDate > endDate)
         {
             return BadRequest(new { message = "A data inicial deve ser anterior à data final" });
         }
 
         var visitsByDate = await _visitorService.GetVisitorsByDateAsync(startDate, endDate);
-        
+
         var result = visitsByDate.ToDictionary(
             kvp => kvp.Key.ToString("yyyy-MM-dd"),
             kvp => kvp.Value);
-        
+
         return Ok(result);
     }
-    
+
     private string GetClientIpAddress()
     {
-        string ip = Request.Headers["X-Forwarded-For"].FirstOrDefault() ?? 
+        string ip = Request.Headers["X-Forwarded-For"].FirstOrDefault() ??
                     Request.Headers["X-Real-IP"].FirstOrDefault();
-        
+
         if (string.IsNullOrEmpty(ip))
         {
             ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
