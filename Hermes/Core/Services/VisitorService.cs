@@ -22,8 +22,13 @@ public class VisitorService : IVisitorService
     {
         try
         {
+            if (await HasVisitorBeenRecordedTodayAsync(ipAddress))
+            {
+                return Guid.Empty;
+            }
+        
             var country = await GetCountryFromIpAsync(ipAddress);
-            
+        
             var visitor = new Visitor
             {
                 IpAddress = ipAddress,
@@ -79,5 +84,12 @@ public class VisitorService : IVisitorService
             _logger.LogError(ex, "Erro ao obter país para o IP {IpAddress}", ipAddress);
             return "Desconhecido";
         }
+    }
+
+    private async Task<bool> HasVisitorBeenRecordedTodayAsync(string ipAddress)
+    {
+        var today = DateTime.UtcNow.Date;
+        var tomorrow = today.AddDays(1);
+        return await _visitorRepository.HasVisitorBeenRecordedInPeriodAsync(ipAddress, today, tomorrow);
     }
 }

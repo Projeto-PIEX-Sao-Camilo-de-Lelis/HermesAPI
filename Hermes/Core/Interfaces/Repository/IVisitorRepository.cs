@@ -8,4 +8,5 @@ public interface IVisitorRepository
     Task<int> GetVisitorCountAsync();
     Task<Dictionary<string, int>> GetVisitorsByCountryAsync();
     Task<Dictionary<DateTime, int>> GetVisitorsByDateAsync(DateTime startDate, DateTime endDate);
+    Task<bool> HasVisitorBeenRecordedInPeriodAsync(string ipAddress, DateTime startDate, DateTime endDate);
 }
