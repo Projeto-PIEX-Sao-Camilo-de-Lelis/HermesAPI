@@ -10,12 +10,10 @@ namespace Hermes.Controllers;
 public class VisitorController : ControllerBase
 {
     private readonly IVisitorService _visitorService;
-    private readonly ILogger<VisitorController> _logger;
-
-    public VisitorController(IVisitorService visitorService, ILogger<VisitorController> logger)
+    
+    public VisitorController(IVisitorService visitorService)
     {
         _visitorService = visitorService;
-        _logger = logger;
     }
 
     [HttpPost("record")]
@@ -38,7 +36,6 @@ public class VisitorController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao registrar visita");
             return StatusCode(500, new { message = "Erro ao registrar visita" });
         }
     }
@@ -73,19 +70,29 @@ public class VisitorController : ControllerBase
             startDate = DateTime.UtcNow.Date;
             endDate = startDate.AddDays(1);
         }
-
-        endDate = endDate.Date.AddDays(1).AddTicks(-1);
+        
+        endDate = endDate.Date.AddDays(1).AddMilliseconds(-1);
 
         if (startDate > endDate)
         {
             return BadRequest(new { message = "A data inicial deve ser anterior à data final" });
         }
-
+        
         var visitsByDate = await _visitorService.GetVisitorsByDateAsync(startDate, endDate);
-
-        var result = visitsByDate.ToDictionary(
-            kvp => kvp.Key.ToString("yyyy-MM-dd"),
-            kvp => kvp.Value);
+        
+        var result = new Dictionary<string, int>();
+        foreach (var entry in visitsByDate)
+        {
+            var dateKey = entry.Key.ToString("yyyy-MM-dd");
+            if (result.ContainsKey(dateKey))
+            {
+                result[dateKey] += entry.Value;
+            }
+            else
+            {
+                result[dateKey] = entry.Value;
+            }
+        }
 
         return Ok(result);
     }

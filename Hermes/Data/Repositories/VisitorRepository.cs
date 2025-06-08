@@ -19,7 +19,7 @@ public class VisitorRepository : BaseRepository, IVisitorRepository
             return await connection.QuerySingleAsync<int>(sql);
         });
     }
-    
+
     public async Task<Dictionary<string, int>> GetVisitorsByCountryAsync()
     {
         return await ExecuteWithConnectionAsync(async connection =>
@@ -40,18 +40,22 @@ public class VisitorRepository : BaseRepository, IVisitorRepository
         return await ExecuteWithConnectionAsync(async connection =>
         {
             const string sql = @"
-            SELECT DATE_TRUNC('day', visit_date) as date, COUNT(*) as count
+            -- Extrair data no fuso UTC sem considerar horas
+            SELECT DATE_TRUNC('day', visit_date AT TIME ZONE 'UTC') as date, COUNT(*) as count
             FROM visitors
-            WHERE visit_date BETWEEN @StartDate AND @EndDate
-            GROUP BY DATE_TRUNC('day', visit_date)
+            WHERE visit_date >= @StartDate AND visit_date <= @EndDate
+            GROUP BY DATE_TRUNC('day', visit_date AT TIME ZONE 'UTC')
             ORDER BY date";
 
             var parameters = new { StartDate = startDate, EndDate = endDate };
             var results = await connection.QueryAsync<(DateTime Date, int Count)>(sql, parameters);
-            return results.ToDictionary(r => r.Date, r => r.Count);
+            
+            return results.ToDictionary(
+                r => DateTime.SpecifyKind(r.Date, DateTimeKind.Utc),
+                r => r.Count);
         });
     }
-    
+
     public async Task<Guid> RecordVisitAsync(Visitor visitor)
     {
         return await ExecuteWithConnectionAsync(async connection =>
@@ -67,7 +71,7 @@ public class VisitorRepository : BaseRepository, IVisitorRepository
             return id;
         });
     }
-    
+
     public async Task<bool> HasVisitorBeenRecordedInPeriodAsync(string ipAddress, DateTime startDate, DateTime endDate)
     {
         return await ExecuteWithConnectionAsync(async connection =>
@@ -81,7 +85,7 @@ public class VisitorRepository : BaseRepository, IVisitorRepository
 
             var parameters = new { IpAddress = ipAddress, StartDate = startDate, EndDate = endDate };
             var count = await connection.QuerySingleAsync<int>(sql, parameters);
-        
+
             return count > 0;
         });
     }
