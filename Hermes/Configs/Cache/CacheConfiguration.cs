@@ -23,18 +23,41 @@ namespace Hermes.Configs.Cache
 
             services.AddSingleton(cacheSettings);
 
-            if (cacheSettings.IsEnabled && !string.IsNullOrEmpty(cacheSettings.Endpoint))
+            services.AddSingleton<ICacheProvider>(serviceProvider =>
             {
-                services.AddSingleton<ICacheProvider>(provider =>
-                    new ValkeyCacheProvider(cacheSettings));
-            }
-            else
-            {
-                services.AddSingleton<ICacheProvider, NullCacheProvider>();
-            }
+                var logger = serviceProvider.GetService<ILogger<ValkeyCacheProvider>>();
+
+                if (!cacheSettings.IsEnabled)
+                {
+                    logger?.LogInformation("Cache desabilitado via configuração, usando NullCacheProvider.");
+                    return new NullCacheProvider();
+                }
+
+                try
+                {
+                    var cacheProvider = new ValkeyCacheProvider(cacheSettings, logger);
+                    var testResult = cacheProvider.TestConnectionAsync().GetAwaiter().GetResult();
+
+                    if (testResult)
+                    {
+                        logger?.LogInformation("Cache conectado com sucesso, usando ValkeyCacheProvider");
+                        return cacheProvider;
+                    }
+                    else
+                    {
+                        logger?.LogWarning("Falha na conexão com o cache, fazendo fallback para NullCacheProvider");
+                        cacheProvider.Dispose();
+                        return new NullCacheProvider();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger?.LogError(ex, "Erro ao inicializar o cache, fazendo fallback para NullCacheProvider");
+                    return new NullCacheProvider();
+                }
+            });
 
             services.AddScoped<IBlogPostCacheService, BlogPostCacheService>();
-
             return services;
         }
     }
