@@ -9,9 +9,8 @@
                 options.AddPolicy("AllowSpecificOrigins", builder =>
                 {
                     builder.WithOrigins(
-                            "http://localhost:3000",
-                            "http://localhost:5173",
-                            "https://casacamilodelelis.org"
+                            "https://casacamilodelelis.org",
+                            "https://static.cloudflareinsights.com"
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()
