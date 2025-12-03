@@ -42,6 +42,7 @@ namespace Hermes
             builder.Services.AddSwaggerConfiguration();
             builder.Services.AddCloudinaryConfiguration();
             builder.Services.AddCacheConfiguration();
+            builder.Services.AddHttpClient();
 
             // Database Connection.
             builder.Services.AddSingleton<IDbConnectionFactory>(provider =>
@@ -55,6 +56,8 @@ namespace Hermes
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IBlogPostRepository, BlogPostRepository>();
             builder.Services.AddScoped<IBlogPostService, BlogPostService>();
+            builder.Services.AddScoped<IVisitorRepository, VisitorRepository>();
+            builder.Services.AddScoped<IVisitorService, VisitorService>();
 
             var app = builder.Build();
 
@@ -65,7 +68,7 @@ namespace Hermes
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseCors("AllowSpecificOrigins");
             app.UseAuthentication();
