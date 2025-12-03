@@ -10,7 +10,7 @@
                 {
                     builder.WithOrigins(
                             "https://casacamilodelelis.org",
-                            "https://casacamilodelelis.netlify.app"
+                            "https://static.cloudflareinsights.com"
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()
