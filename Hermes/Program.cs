@@ -46,7 +46,7 @@ namespace Hermes
 
             // Database Connection.
             builder.Services.AddSingleton<IDbConnectionFactory>(provider =>
-            new PostgresConnectionFactory(connectionString));
+                new PostgresConnectionFactory(connectionString));
             SqlMapper.AddTypeHandler(new RoleTypeHandler());
             SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
 
@@ -60,6 +60,12 @@ namespace Hermes
             builder.Services.AddScoped<IVisitorService, VisitorService>();
 
             var app = builder.Build();
+            
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -68,7 +74,7 @@ namespace Hermes
                 app.UseSwaggerUI();
             }
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
             app.UseCors("AllowSpecificOrigins");
             app.UseAuthentication();

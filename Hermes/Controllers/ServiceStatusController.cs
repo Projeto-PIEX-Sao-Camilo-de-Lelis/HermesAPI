@@ -20,18 +20,53 @@ namespace Hermes.Controllers
         public async Task<IActionResult> Get()
         {
             string cacheEnabledStatus = Environment.GetEnvironmentVariable("CACHE_ENABLED") ?? "false";
-            var cachePingResult = await _valkeyCacheProvider.PingAsync();
-
+            bool isCacheEnabled = bool.TryParse(cacheEnabledStatus, out bool enabled) && enabled;
 
             var healthCheck = new
             {
                 serviceStatus = "Up",
                 cacheEnabledStatus,
-                cacheStatus = cachePingResult.IsAlive ? "Up" : "Down",
-                cacheLatency = cachePingResult.Latency.TotalMilliseconds + " ms"
+                cacheStatus = await GetCacheStatusAsync(isCacheEnabled),
+                cacheLatency = await GetCacheLatencyAsync(isCacheEnabled),
             };
 
             return Ok(healthCheck);
+        }
+
+        private async Task<string> GetCacheStatusAsync(bool isCacheEnabled)
+        {
+            if (!isCacheEnabled)
+            {
+                return "Disabled";
+            }
+
+            try
+            {
+                var cachePingResult = await _valkeyCacheProvider.PingAsync();
+                return cachePingResult.IsAlive ? "Up" : "Down";
+            }
+            catch
+            {
+                return "Down";
+            }
+        }
+
+        private async Task<string> GetCacheLatencyAsync(bool isCacheEnabled)
+        {
+            if (!isCacheEnabled)
+            {
+                return "NA";
+            }
+
+            try
+            {
+                var cachePingResult = await _valkeyCacheProvider.PingAsync();
+                return cachePingResult.Latency.TotalMilliseconds + " ms";
+            }
+            catch
+            {
+                return "NA";
+            }
         }
     }
 }
