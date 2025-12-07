@@ -60,7 +60,7 @@ namespace Hermes
             builder.Services.AddScoped<IVisitorService, VisitorService>();
 
             var app = builder.Build();
-            
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -74,7 +74,7 @@ namespace Hermes
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseCors("AllowSpecificOrigins");
             app.UseAuthentication();
