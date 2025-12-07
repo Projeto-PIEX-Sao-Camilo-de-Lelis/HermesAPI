@@ -10,7 +10,8 @@
                 {
                     builder.WithOrigins(
                             "https://casacamilodelelis.org",
-                            "https://static.cloudflareinsights.com"
+                            "https://static.cloudflareinsights.com",
+                            "http://localhost:5173"
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()
